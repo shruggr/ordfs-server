@@ -21,3 +21,9 @@ RegisterRoutes(app);
 1. `A` or `CNAME` record to point domain to wherever this server is running
 2. `TXT` record for the same domain, which points sever to InscriptionId which should function as home page for the domain
    - `ordfs=<InscriptionID>` 
+
+
+### Config
+#### BTC Node
+Set the following ENVIRONMENT VARS
+BTC
