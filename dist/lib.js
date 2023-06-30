@@ -10,7 +10,7 @@ const outpoint_1 = require("./outpoint");
 const jb = new js_junglebus_1.JungleBusClient('https://junglebus.gorillapool.io');
 async function loadOutpointFromDNS(hostname) {
     const TXTs = await dns.resolveTxt(hostname);
-    const prefix = "1sat-origin=";
+    const prefix = "ordfs=";
     let origin = '';
     for (let TXT of TXTs) {
         for (let elem of TXT) {
