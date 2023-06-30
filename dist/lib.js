@@ -1,40 +1,67 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseOutputScript = exports.loadInscription = exports.loadOutpointFromDNS = void 0;
-const js_junglebus_1 = require("@gorillapool/js-junglebus");
+exports.parseScript = exports.loadInscription = exports.loadPointerFromDNS = void 0;
 const core_1 = require("@ts-bitcoin/core");
-;
+const bitcore_lib_1 = require("bitcore-lib");
 const dns = require("dns/promises");
 const http_errors_1 = require("http-errors");
-const outpoint_1 = require("./outpoint");
-const jb = new js_junglebus_1.JungleBusClient('https://junglebus.gorillapool.io');
-async function loadOutpointFromDNS(hostname) {
+const provider_1 = require("./provider");
+let btcProvider;
+let bsvProvider = new provider_1.JungleBusProvider();
+if (process.env.BITCOIN_HOST) {
+    bsvProvider = new provider_1.RpcProvider('bsv', process.env.BITCOIN_HOST || '', process.env.BITCOIN_PORT || '8332', process.env.BITCOIN_USER || '', process.env.BITCOIN_PASS || '');
+}
+if (process.env.BTC_HOST) {
+    btcProvider = new provider_1.RpcProvider('btc', process.env.BTC_HOST || '', process.env.BTC_PORT || '8332', process.env.BTC_USER || '', process.env.BTC_PASS || '');
+}
+async function loadPointerFromDNS(hostname) {
     const TXTs = await dns.resolveTxt(hostname);
     const prefix = "ordfs=";
-    let origin = '';
+    let pointer = '';
     for (let TXT of TXTs) {
         for (let elem of TXT) {
             if (!elem.startsWith(prefix))
                 continue;
             console.log("Elem:", elem);
-            origin = elem.slice(prefix.length);
-            console.log("Origin:", origin);
+            pointer = elem.slice(prefix.length);
+            console.log("Origin:", pointer);
         }
     }
-    if (!origin) {
+    if (!pointer) {
         throw new http_errors_1.NotFound();
     }
-    return outpoint_1.Outpoint.fromString(origin);
+    return pointer;
 }
-exports.loadOutpointFromDNS = loadOutpointFromDNS;
-async function loadInscription(outpoint) {
-    const txnData = await jb.GetTransaction(outpoint.txid.toString('hex'));
-    const tx = core_1.Tx.fromBuffer(Buffer.from((txnData === null || txnData === void 0 ? void 0 : txnData.transaction) || '', 'base64'));
-    return parseOutputScript(tx.txOuts[outpoint.vout].script);
+exports.loadPointerFromDNS = loadPointerFromDNS;
+async function loadInscription(pointer) {
+    console.log("loadInscription", pointer);
+    let script;
+    if (pointer.match(/^[0-9a-fA-F]{64}_\d*$/)) {
+        const [txid, vout] = pointer.split('_');
+        console.log('BSV:', txid, vout);
+        const rawtx = await bsvProvider.getRawTx(txid);
+        const tx = core_1.Tx.fromBuffer(rawtx);
+        script = tx.txOuts[parseInt(vout, 10)].script;
+    }
+    else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
+        const [txid, vin] = pointer.split('i');
+        console.log('BTC', txid, vin);
+        const rawtx = await btcProvider.getRawTx(txid);
+        const tx = new bitcore_lib_1.Transaction(rawtx);
+        script = core_1.Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
+    }
+    else
+        throw new Error('Invalid Pointer');
+    if (!script)
+        throw new http_errors_1.NotFound();
+    const file = parseScript(script);
+    if (!file)
+        throw new http_errors_1.NotFound();
+    return file;
 }
 exports.loadInscription = loadInscription;
-async function parseOutputScript(script) {
-    var _a;
+function parseScript(script) {
+    var _a, _b, _c;
     let opFalse = 0;
     let opIf = 0;
     let opORD = 0;
@@ -56,25 +83,33 @@ async function parseOutputScript(script) {
         lock.chunks.push(chunk);
     }
     let type = 'application/octet-stream';
-    let data;
-    for (let i = opORD + 1; i < script.chunks.length; i += 2) {
-        if (script.chunks[i].buf)
-            break;
+    let data = Buffer.alloc(0);
+    for (let i = opORD + 1; i < script.chunks.length; i++) {
+        // console.log(script.chunks[i])
         switch (script.chunks[i].opCodeNum) {
-            case core_1.OpCode.OP_0:
-                data = script.chunks[i + 1].buf;
+            case core_1.OpCode.OP_FALSE:
+                while (((_b = script.chunks[i + 1]) === null || _b === void 0 ? void 0 : _b.opCodeNum) >= 1 &&
+                    ((_c = script.chunks[i + 1]) === null || _c === void 0 ? void 0 : _c.opCodeNum) <= core_1.OpCode.OP_PUSHDATA4) {
+                    data = Buffer.concat([data, script.chunks[i + 1].buf]);
+                    i++;
+                }
                 break;
-            case core_1.OpCode.OP_1:
+            case 1:
+                // console.log(script.chunks[i].toString('hex'))
+                if (script.chunks[i].buf[0] != 1)
+                    return;
+            case core_1.OpCode.OP_TRUE:
                 type = script.chunks[i + 1].buf.toString('utf8');
+                // console.log("Type:", type)
+                i++;
                 break;
             case core_1.OpCode.OP_ENDIF:
-                break;
+                return { type, data };
+            default:
+                return;
         }
-    }
-    if (!data) {
-        throw new http_errors_1.NotFound("Inscription not found");
     }
     return { type, data };
 }
-exports.parseOutputScript = parseOutputScript;
+exports.parseScript = parseScript;
 //# sourceMappingURL=lib.js.map

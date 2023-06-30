@@ -18,12 +18,12 @@ async function main() {
 server.set('trust proxy', true);
 server.use(cors({ origin: true }));
 
-RegisterRoutes(server);
-
 server.use((req, res, next) => {
     console.log(req.path, req.method);
     next();
 });
+
+RegisterRoutes(server);
 
 server.use((req, res, next) => {
     console.log(req.path)

@@ -15,11 +15,11 @@ async function main() {
 }
 server.set('trust proxy', true);
 server.use(cors({ origin: true }));
-(0, routes_1.RegisterRoutes)(server);
 server.use((req, res, next) => {
     console.log(req.path, req.method);
     next();
 });
+(0, routes_1.RegisterRoutes)(server);
 server.use((req, res, next) => {
     console.log(req.path);
     next(new http_errors_1.NotFound("Not Found"));

@@ -1,8 +1,7 @@
 import * as express from 'express';
 import { Response } from 'express';
 import { NotFound } from 'http-errors';
-import { File, OrdFS, loadInscription, loadOutpointFromDNS } from './lib';
-import { Outpoint } from './outpoint';
+import { File, OrdFS, loadInscription, loadPointerFromDNS } from './lib';
 
 function sendFile(file: File, res: Response) {
     res.header('Content-Type', file.type || '');
@@ -13,7 +12,7 @@ function sendFile(file: File, res: Response) {
 export function RegisterRoutes(app: express.Express) {
     app.get("/", async (req, res, next) => {
         try {
-            const outpoint = await loadOutpointFromDNS(req.hostname);
+            const outpoint = await loadPointerFromDNS(req.hostname);
             let file = await loadInscription(outpoint)
             if (file.type === 'ord-fs/json' && !req.query['raw']) {
                 req.res?.redirect('index.html');
@@ -25,54 +24,58 @@ export function RegisterRoutes(app: express.Express) {
         }
     });
 
-    app.get("/:filename", async (req, res, next) => {
+    app.get("/:filename", loadFileOrOrdfs);
+    app.get("/content/:filename", loadFileOrOrdfs);
+
+    async function loadFileOrOrdfs(req, res, next) {
         const filename = req.params.filename;
         try {
-            let outpoint: Outpoint;
+            let pointer: string;
             let file: File;
             try {
-                console.log('filename', filename)
-                outpoint = Outpoint.fromString(filename)
-                file = await loadInscription(outpoint)
-                if (file.type === 'ord-fs/json') {
-                    req.res?.redirect(`${outpoint.toString()}/index.html`);
+                file = await loadInscription(filename)
+                if (file.type === 'ord-fs/json' && !req.params.raw) {
+                    req.res?.redirect(`/${filename}/index.html`);
                     return
                 }
             } catch (e: any) {
                 console.error('Outpoint Error', filename, e);
-                outpoint = await loadOutpointFromDNS(req.hostname);
-                const dirData = await loadInscription(outpoint);
+                pointer = await loadPointerFromDNS(req.hostname);
+                const dirData = await loadInscription(pointer);
                 const dir = JSON.parse(dirData.data!.toString('utf8'));
                 if (!dir[filename]) {
                     throw new NotFound()
                 }
-                outpoint = Outpoint.fromString((dir[filename] as string).slice(6))
-                file = await loadInscription(outpoint)
+                pointer = dir[filename].slice(6);
+                file = await loadInscription(pointer)
             }
             sendFile(file, res);
         } catch (err) {
             next(err);
         }
-    });
+    }
 
-    app.get("/:outpoint/:filename", async (req, res, next) => {
+    app.get("/:pointer/:filename", loadFile);
+    app.get("/content/:pointer/:filename", loadFile);
+
+    async function loadFile(req, res, next) {
         try {
-            let outpoint = Outpoint.fromString(req.params.outpoint);
+            let pointer = req.params.pointer;
             const filename = req.params.filename;
-            const dirData = await loadInscription(outpoint);
+            const dirData = await loadInscription(pointer);
             const dir: OrdFS = JSON.parse(dirData.data!.toString('utf8'));
             if (!dir[filename]) {
                 throw new NotFound()
             }
             if (dir[filename].startsWith('ord://')) {
-                outpoint = Outpoint.fromString(dir[filename].slice(6))
+                pointer = dir[filename].slice(6)
             } else {
-                outpoint = Outpoint.fromString(dir[filename]);
+                pointer = dir[filename];
             }
-            const file = await loadInscription(outpoint)
+            const file = await loadInscription(pointer)
             sendFile(file, res);
         } catch (err) {
             next(err);
         }
-    });
+    }
 }

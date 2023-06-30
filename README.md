@@ -25,5 +25,15 @@ RegisterRoutes(app);
 
 ### Config
 #### BTC Node
-Set the following ENVIRONMENT VARS
-BTC
+Set the following ENVIRONMENT VARS to point to your BTC Node. REST server must be enabled.
+`BTC_HOST=`
+`BTC_PORT=`
+`BTC_UN=`
+`BTC_PW=`
+
+#### BSV Node (Optional. JungleBus is used as a fallback if not configured)
+Set the following ENVIRONMENT VARS to point to your BSV Node. REST server must be enabled.
+`BITCOIN_HOST=`
+`BITCOIN_PORT=`
+`BITCOIN_UN=`
+`BITCOIN_PW=`

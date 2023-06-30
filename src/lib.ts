@@ -1,34 +1,73 @@
-import { JungleBusClient } from "@gorillapool/js-junglebus";
-import { OpCode, Script, Tx } from "@ts-bitcoin/core";;
+import { OpCode, Script, Tx } from "@ts-bitcoin/core";
+import { Transaction } from 'bitcore-lib';
 import * as dns from 'dns/promises'
 import { NotFound } from 'http-errors';
-import { Outpoint } from "./outpoint";
+import { ITxProvider, JungleBusProvider, RpcProvider } from "./provider";
 
-const jb = new JungleBusClient('https://junglebus.gorillapool.io');
+let btcProvider: ITxProvider | undefined;
+let bsvProvider: ITxProvider = new JungleBusProvider();
 
-export async function loadOutpointFromDNS(hostname: string): Promise<Outpoint> {
+if (process.env.BITCOIN_HOST) {
+    bsvProvider = new RpcProvider(
+        'bsv',
+        process.env.BITCOIN_HOST || '',
+        process.env.BITCOIN_PORT || '8332',
+        process.env.BITCOIN_USER || '',
+        process.env.BITCOIN_PASS || '',
+    );
+}
+
+if (process.env.BTC_HOST) {
+    btcProvider = new RpcProvider(
+        'btc',
+        process.env.BTC_HOST || '',
+        process.env.BTC_PORT || '8332',
+        process.env.BTC_USER || '',
+        process.env.BTC_PASS || '',
+    );
+}
+
+export async function loadPointerFromDNS(hostname: string): Promise<string> {
     const TXTs = await dns.resolveTxt(hostname);
     const prefix = "ordfs=";
-    let origin = '';
+    let pointer = '';
     for (let TXT of TXTs) {
         for (let elem of TXT) {
             if (!elem.startsWith(prefix)) continue;
             console.log("Elem:", elem)
-            origin = elem.slice(prefix.length)
-            console.log("Origin:", origin)
+            pointer = elem.slice(prefix.length)
+            console.log("Origin:", pointer)
         }
     }
 
-    if (!origin) {
+    if (!pointer) {
         throw new NotFound()
     }
-    return Outpoint.fromString(origin)
+    return pointer;
 }
 
-export async function loadInscription(outpoint: Outpoint): Promise<File> {
-    const txnData = await jb.GetTransaction(outpoint.txid.toString('hex'));
-    const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
-    return parseOutputScript(tx.txOuts[outpoint.vout].script);
+export async function loadInscription(pointer: string): Promise<File> {
+    console.log("loadInscription", pointer)
+    let script: Script | undefined
+    if (pointer.match(/^[0-9a-fA-F]{64}_\d*$/)) {
+        const [txid, vout] = pointer.split('_');
+        console.log('BSV:', txid, vout)
+        const rawtx = await bsvProvider.getRawTx(txid);
+        const tx = Tx.fromBuffer(rawtx);
+        script = tx.txOuts[parseInt(vout, 10)].script;
+    } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
+        const [txid, vin] = pointer.split('i');
+        console.log('BTC', txid, vin);
+        const rawtx = await btcProvider.getRawTx(txid);
+        const tx = new Transaction(rawtx);
+        script = Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1])
+    } else throw new Error('Invalid Pointer')
+
+    if (!script) throw new NotFound();
+
+    const file = parseScript(script);
+    if (!file) throw new NotFound();
+    return file;
 }
 
 export interface File {
@@ -40,19 +79,19 @@ export interface OrdFS {
     [filename: string]: string;
 }
 
-export async function parseOutputScript(script: Script): Promise<File> {
+export function parseScript(script: Script): File | undefined {
     let opFalse = 0;
     let opIf = 0;
     let opORD = 0;
     const lock = new Script();
-    for(let [i, chunk] of script.chunks.entries()) {
-        if(chunk.opCodeNum === OpCode.OP_FALSE) {
+    for (let [i, chunk] of script.chunks.entries()) {
+        if (chunk.opCodeNum === OpCode.OP_FALSE) {
             opFalse = i;
         }
-        if(chunk.opCodeNum === OpCode.OP_IF) {
+        if (chunk.opCodeNum === OpCode.OP_IF) {
             opIf = i;
         }
-        if(chunk.buf?.equals(Buffer.from('ord', 'utf8'))) {
+        if (chunk.buf?.equals(Buffer.from('ord', 'utf8'))) {
             if (opFalse === i - 2 && opIf === i - 1) {
                 opORD = i;
                 lock.chunks = script.chunks.slice(0, i - 2);
@@ -63,24 +102,32 @@ export async function parseOutputScript(script: Script): Promise<File> {
     }
 
     let type = 'application/octet-stream';
-    let data: Buffer | undefined;
+    let data = Buffer.alloc(0);
 
-    for(let i = opORD + 1; i < script.chunks.length; i+=2) {
-        if (script.chunks[i].buf) break;
-        switch(script.chunks[i].opCodeNum) {
-            case OpCode.OP_0:
-                data = script.chunks[i+1]!.buf!;
+    for (let i = opORD + 1; i < script.chunks.length; i++) {
+        // console.log(script.chunks[i])
+        switch (script.chunks[i].opCodeNum) {
+            case OpCode.OP_FALSE:
+                while (script.chunks[i + 1]?.opCodeNum >= 1 &&
+                    script.chunks[i + 1]?.opCodeNum <= OpCode.OP_PUSHDATA4) {
+                    data = Buffer.concat([data, script.chunks[i + 1].buf!])
+                    i++;
+                }
                 break;
-            case OpCode.OP_1:
-                type = script.chunks[i+1]!.buf!.toString('utf8');
+            case 1:
+                // console.log(script.chunks[i].toString('hex'))
+                if (script.chunks[i].buf![0] != 1) return;
+            case OpCode.OP_TRUE:
+                type = script.chunks[i + 1]!.buf!.toString('utf8');
+                // console.log("Type:", type)
+                i++;
                 break;
             case OpCode.OP_ENDIF:
-                break;
+                return { type, data };
+            default:
+                return;
         }
     }
 
-    if (!data) {
-        throw new NotFound("Inscription not found");
-    }
     return { type, data };
 }
