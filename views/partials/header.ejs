@@ -1,53 +1,151 @@
 <nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
   <div class="relative bg-[#111]">
-    <div className="absolute top-0 mx-auto font-bold z-10">FS</div>
-    <svg
-      width="511"
-      height="511"
-      viewBox="0 0 511 511"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      class="h-12 w-auto"
-    >
-      <circle cx="255.5" cy="255.5" r="255.5" fill="#D9D9D9" />
-      <circle cx="255.5" cy="255.5" r="232.5" fill="black" />
-      <circle cx="255.5" cy="255.5" r="181.5" fill="#F0BB00" />
-    </svg>
+    <img
+      class="h-12 w-auto opacity-75"
+      src="/971388081f6601b0e502adbfceef68d152e7f27ba5aff0230d2567aaa8acb768_0"
+    ></svg>
   </div>
 </nav>
-<!-- Mobile menu, show/hide based on menu open state. -->
-<div class="lg:hidden" role="dialog" aria-modal="true">
-  <!-- Background backdrop, show/hide based on slide-over state. -->
-  <div class="fixed inset-0 z-50"></div>
+
+<div class="relative isolate px-6 lg:px-8">
   <div
-    class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-black px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10"
+    class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+    aria-hidden="true"
   >
-    <div class="flex items-center justify-between">
-      <a href="#" class="-m-1.5 p-1.5">
-        <span class="sr-only">Your Company</span>
-        <img
-          class="h-8 w-auto"
-          src="https://tailwindui.com/img/logos/mark.svg?color=emerald&shade=600"
-          alt=""
-        />
-      </a>
-      <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700">
-        <span class="sr-only">Close menu</span>
-        <svg
-          class="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          aria-hidden="true"
+    <div
+      class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
+      style="
+        clip-path: polygon(
+          74.1% 44.1%,
+          100% 61.6%,
+          97.5% 26.9%,
+          85.5% 0.1%,
+          80.7% 2%,
+          72.5% 32.5%,
+          60.2% 62.4%,
+          52.4% 68.1%,
+          47.5% 58.3%,
+          45.2% 34.5%,
+          27.5% 76.7%,
+          0.1% 64.9%,
+          17.9% 100%,
+          27.6% 76.8%,
+          76.1% 97.7%,
+          74.1% 44.1%
+        );
+      "
+    ></div>
+  </div>
+  <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+    <div class="text-center">
+      <h1
+        id="ordfs-title"
+        class="text-6xl font-bold tracking-tight text-gray-200 sm:text-9xl transition"
+      >
+        ORD-FS
+      </h1>
+      <h2 class="mt-6 text-2xl leading-8 text-gray-100">
+        Bitcoin > Internet 😎
+      </h2>
+      <p class="mt-6 text-lg leading-8 text-gray-100">
+        Your ordfs-server is up and running.
+      </p>
+
+      <p
+        class="mt-6 text-lg leading-8 text-gray-100 hidden"
+        id="latest-block"
+      ></p>
+
+      <div
+        class="mt-6 text-lg leading-8 text-gray-100 bg-[#111] rounded p-2"
+      >
+        <ul class="my-4">
+          <li class="flex items-center justify-center">
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              stroke-width="0"
+              viewBox="0 0 24 24"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+              class="mr-2"
+            >
+              <path fill="none" d="M0 0h24v24H0V0z"></path>
+              <path
+                d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+              ></path>
+            </svg>
+            Set a TXT record on your domain
+          </li>
+          <li class="mt-2 text-xs mb-4 truncate">
+            TXT='ordfs=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef_0'
+          </li>
+          <li class="flex items-center justify-center mt-4">
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              stroke-width="0"
+              viewBox="0 0 24 24"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+              class="mr-2"
+            >
+              <path fill="none" d="M0 0h24v24H0V0z"></path>
+              <path
+                d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+              ></path>
+            </svg>
+            Set an A or CNAME record for ordfs-server
+          </li>
+          <li class="text-sm">
+            A=10.10.10.10 / CNAME=subdomain.mydomain.com
+          </li>
+        </ul>
+      </div>
+
+      <div class="mt-10 flex items-center justify-center gap-x-6">
+           <a
+          href="#demo"
+          class="rounded-md bg-purple-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition"
+          >Try It Out</a
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
+        <a
+          href="https://github.com/shruggr/ordfs-server"
+          class="rounded-md bg-emerald-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Read Documentation</a
+        >
+      </div>
     </div>
+  </div>
+  <div
+    class="relative transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
+  >
+    <div
+      class="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
+      style="
+        clip-path: polygon(
+          74.1% 44.1%,
+          100% 61.6%,
+          97.5% 26.9%,
+          85.5% 0.1%,
+          80.7% 2%,
+          72.5% 32.5%,
+          60.2% 62.4%,
+          52.4% 68.1%,
+          47.5% 58.3%,
+          45.2% 34.5%,
+          27.5% 76.7%,
+          0.1% 64.9%,
+          17.9% 100%,
+          27.6% 76.8%,
+          76.1% 97.7%,
+          74.1% 44.1%
+        );
+      "
+    ></div>
   </div>
 </div>

@@ -1,0 +1,82 @@
+<script type="application/javascript">
+  const exampleHtml = `
+  <html>
+    <head>
+      <title>ORD-FS</title>
+    </head>
+    <body style="margin: 0; padding: 0;">
+      <div style="
+        border-radius: 0.5rem;
+        background: linear-gradient(to right, black, #800080);
+        width: 100%; align: center; height:100%; display: flex; justify-content: center; align-items: center;
+      ">
+        <img src="/971388081f6601b0e502adbfceef68d152e7f27ba5aff0230d2567aaa8acb768_0" style="width:100px;" />
+      </div>
+    </body>
+  </html>`;
+
+  const tryItOut = () => {
+    let html = document.querySelector("#html").value;
+    document.querySelector("#tryItOut").classList.remove("hidden");
+    document.querySelector("#tryItOut").classList.add("block");
+
+    if (!html || html.length === 0) {
+      html = exampleHtml.trim();
+      document.querySelector("#html").value = html;
+    }
+    console.log({ html });
+    try {
+      // Display the HTML code as plain text in the 'preview' element
+      const b64 = btoa(html);
+      document.querySelector("#preview").src = `/preview/${b64}`;
+    } catch (e) {
+      console.error("Error displaying HTML code");
+    }
+  };
+</script>
+<div
+  class="p-2 text-white rounded w-full max-w-6xl mx-auto flex flex-col items-center justify-center"
+  id="demo"
+>
+  <h2 class="mb-4 text-4xl">Native Bitcoin API</h2>
+  <h2 class="mb-4 text-xl">For Building Programmable HTML Inscriptions</h2>
+
+  <p class="p-2 text-xl text-[#aaa] max-w-2xl">
+    Bitcoin-native endpoints allow access to other inscriptions and blockchain
+    data from within your code. You can reference JavaScript files, images, and
+    even other HTML inscriptions. You can also access blockchain data such as
+    transaction data, block data, and more!
+  </p>
+  <div class="">
+    <ul>
+      <li class="text-[#aaa] my-4">Access inscriptions across chains</li>
+      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">/{outpoint}</li>
+      <li class="text-[#aaa] my-4">Preview your code before broadcasting</li>
+      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
+        /preview/{b64Html}
+      </li>
+      <li class="text-[#aaa] my-4">
+        Compatible with BTC recursive inscriptions
+      </li>
+      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
+        /content/{outpoint}
+      </li>
+    </ul>
+  </div>
+
+  <h2
+    class="my-4 cursor-pointer bg-purple-600 text-white p-2 rounded"
+    onclick="tryItOut()"
+  >
+    Live Demo
+  </h2>
+  <div id="tryItOut" class="w-full flex hidden max-w-7xl mx-auto">
+    <textarea
+      id="html"
+      class="bg-[#111] text-purple-400 text-xs rounded p-2 w-1/2 h-96 placeholder-gray-400"
+      placeholder="<html></html>"
+      oninput="javascript:preview(this.value)"
+    ></textarea>
+    <iframe id="preview" class="w-1/2 h-96"></iframe>
+  </div>
+</div>
