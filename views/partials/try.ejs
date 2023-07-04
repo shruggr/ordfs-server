@@ -59,24 +59,18 @@
   <div class="md:w-1/2">
     <ul>
       <li class="text-[#aaa] my-4">Access inscriptions across chains</li>
-      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">/{outpoint}</li>
+      <li class="api-item">/{outpoint}</li>
       <li class="text-[#aaa] my-4">Preview your code before broadcasting</li>
-      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
-        /preview/{b64Html}
+      <li class="api-item">/preview/{b64Html}</li>
+      <li class="text-[#aaa] my-4">
+        Get blockchain info. Chain can be 'bsv' or 'btc'
       </li>
-      <li class="text-[#aaa] my-4">Get blockchain info</li>
-      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
-        /{chain}/v1/block/latest
-      </li>
-      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
-        /{chain}/v1/block/{blockHash}
-      </li>
+      <li class="api-item">/{chain}/v1/block/latest</li>
+      <li class="api-item">/{chain}/v1/block/{blockHash}</li>
       <li class="text-[#aaa] my-4">
         Compatible with BTC recursive inscriptions
       </li>
-      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
-        /content/{outpoint}
-      </li>
+      <li class="api-item">/content/{outpoint}</li>
     </ul>
   </div>
 

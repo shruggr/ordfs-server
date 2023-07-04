@@ -43,16 +43,20 @@
             document.querySelector(
               "#latest-block"
             ).innerHTML = `<span class="text-[${color2}]">block-${height} $</span> <span class="text-emerald-200">Your ordfs-server is up and running.</span><br />
-<span class="text-[${color2}]">block-${height} $</span> <span class="bg-clip-text text-transparent bg-gradient-to-r to-[${color}] from-[${color2}]">Derived terminal colors from blockchain data</span><br />
+<span class="text-[${color2}]">block-${height} $</span> <span class="bg-clip-text text-transparent bg-gradient-to-r to-[${color}] from-[${color2}]">Terminal colors derived from blockchain data</span><br />
+<span class="text-[${color2}]">block-${height} $</span> Latest block hash <span class="bg-clip-text text-transparent bg-gradient-to-r to-[${color}] from-[${color2}]">${hash.slice(
+              -10
+            )}</span><br />
+
 <span class="text-[${color2}]">block-${height} $</span><br />
-<span class="text-[${color2}]">block-${height} $</span> Set a TXT record on your domain <br />
+<span class="text-[${color2}]">block-${height} $</span> Set a <span class="text-[${color2}]">TXT</span> record on your domain <br />
 <span class="text-[${color2}]">block-${height} $</span> to point to an ordinal. <br />
-<span class="text-[${color2}]">block-${height} $</span> TXT='ordfs={outpoint}'<br />
-<span class="text-[${color2}]">block-${height} $</span> Where {outpoint} is {txid}_{vout} on BSV,<br /><span class="text-[${color2}]">block-${height} $</span> and {txid}i{vin} on BTC.<br />
+<span class="text-[${color2}]">block-${height} $</span> TXT='ordfs=<span class="text-[${color2}]">outpoint</span>'<br />
+<span class="text-[${color2}]">block-${height} $</span> Where <span class="text-[${color2}]">outpoint</span> is <span class="text-[${color2}]">txid</span>_<span class="text-[${color2}]">vout</span> on BSV,<br /><span class="text-[${color2}]">block-${height} $</span> and {<span class="text-[${color2}]">txid</span>}i{<span class="text-[${color2}]">vin</span>} on BTC.<br />
 <span class="text-[${color2}]">block-${height} $</span><br />
-<span class="text-[${color2}]">block-${height} $</span> Set a A or CNAME record on your domain <br />
+<span class="text-[${color2}]">block-${height} $</span> Set a <span class="text-[${color2}]">A</span> or <span class="text-[${color2}]">CNAME</span> record on your domain <br />
 <span class="text-[${color2}]">block-${height} $</span> to point to your ordfs-server.<br />
-<span class="text-[${color2}]">block-${height} $</span> A=10.10.10.10 / CNAME=subdomain.mydomain.com<br /><span class="text-[${color2}]">block-${height} $</span> `;
+<span class="text-[${color2}]">block-${height} $</span> A=<span class="text-[${color2}]">10.10.10.10</span> / CNAME=<span class="text-[${color2}]">subdomain.mydomain.com</span><br /><span class="text-[${color2}]">block-${height} $</span> `;
 
             const darkColor = getComplementaryDarkColor(color);
             const darkColor2 = getComplementaryDarkColor(color2);
@@ -67,6 +71,16 @@
             document
               .querySelector("#ordfs-title")
               .classList.add(`text-[${color2}]`);
+            Array.from(document.querySelectorAll(".api-item")).map((item) => {
+              item.classList.add(
+                "p-1",
+                "rounded",
+                "bg-[#111]",
+                "my-2",
+                `text-[${color2}]`
+              );
+            });
+
             document
               .querySelector("#ordfs-subtitle")
               .classList.add(`text-[${color}]`);
@@ -86,24 +100,55 @@
       });
 
       function stringToColor(input) {
-        // Convert input to string in case it's a number
         input = input.toString();
 
-        // Simple hash function for strings
         let hash = 0;
         for (let i = 0; i < input.length; i++) {
           hash = input.charCodeAt(i) + ((hash << 5) - hash);
         }
 
-        // Convert hash to a hex color
-        let color = "#";
-        for (let i = 0; i < 3; i++) {
-          let value = (hash >> (i * 8)) & 0xff; // Use the full range 0-255
-          value = Math.floor((value / 255) * 128) + 128; // Adjust the value to the upper half of the range
-          color += ("00" + value.toString(16)).substr(-2);
-        }
+        const hue = hash % 360;
+        const saturation = 75;
+        const lightness = 75;
+
+        const rgbColor = hslToRgb(hue, saturation, lightness);
+        const color = rgbToHex(rgbColor);
 
         return color;
+      }
+
+      function hslToRgb(h, s, l) {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+
+        const hueToRgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+          return p;
+        };
+
+        const r = hueToRgb(p, q, h + 1 / 3);
+        const g = hueToRgb(p, q, h);
+        const b = hueToRgb(p, q, h - 1 / 3);
+
+        return {
+          r: Math.round(r * 255),
+          g: Math.round(g * 255),
+          b: Math.round(b * 255),
+        };
+      }
+
+      function rgbToHex(rgb) {
+        const toHex = (c) => c.toString(16).padStart(2, "0");
+        const { r, g, b } = rgb;
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
       }
     </script>
   </head>
