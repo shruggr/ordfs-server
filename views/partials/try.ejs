@@ -38,11 +38,17 @@
   class="p-2 text-white rounded w-full max-w-6xl mx-auto flex flex-col items-center justify-center"
   id="demo"
 >
-  <h2 class="mb-4 text-4xl">Native Bitcoin API</h2>
-  <h2 class="mb-4 text-xl">For Building Programmable HTML Inscriptions</h2>
+  <h2
+    class="mb-4 text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#673ab7] to-[#e91e63]"
+  >
+    Native Bitcoin API
+  </h2>
+  <h2 class="text-center mb-4 px-4 text-2xl">
+    For Building Programmable HTML Inscriptions
+  </h2>
 
   <div className="w-1/2">
-    <p class="p-2 text-xl text-[#aaa] max-w-2xl">
+    <p class="p-4 text-xl text-[#aaa] max-w-2xl">
       Bitcoin-native endpoints allow access to other inscriptions and blockchain
       data from within your code. You can reference JavaScript files, images,
       and even other HTML inscriptions. You can also access blockchain data such
@@ -50,13 +56,20 @@
     </p>
   </div>
 
-  <div class="w-1/2">
+  <div class="md:w-1/2">
     <ul>
       <li class="text-[#aaa] my-4">Access inscriptions across chains</li>
       <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">/{outpoint}</li>
       <li class="text-[#aaa] my-4">Preview your code before broadcasting</li>
       <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
         /preview/{b64Html}
+      </li>
+      <li class="text-[#aaa] my-4">Get blockchain info</li>
+      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
+        /{chain}/v1/block/latest
+      </li>
+      <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">
+        /{chain}/v1/block/{blockHash}
       </li>
       <li class="text-[#aaa] my-4">
         Compatible with BTC recursive inscriptions
@@ -72,22 +85,22 @@
     code. When you're ready, use a minter like 1satordinals.com to inscribe your
     HTML to the blockchain.
     <button
-      class="my-8 cursor-pointer bg-purple-600 text-white p-2 rounded"
+      class="hover:bg-purple-800 transition my-8 font-bold cursor-pointer text-2xl bg-purple-600 text-white p-2 rounded-md hover:text-emerald-300"
       onclick="tryItOut()"
     >
-      Live Demo
+      <h1>Live Demo</h1>
     </button>
   </div>
 
   <div id="tryItOut" class="w-full hidden max-w-7xl mx-auto">
-    <div class="flex justify-between">
+    <div class="flex flex-col justify-between md:flex-row">
       <textarea
         id="html"
-        class="bg-[#111] text-purple-400 text-xs rounded p-2 w-1/2 h-96 placeholder-gray-400 mr-2"
+        class="bg-[#111] text-purple-400 text-xs rounded p-2 md:w-1/2 h-96 placeholder-gray-400 mr-2"
         placeholder="<html></html>"
         oninput="javascript:preview(this.value)"
       ></textarea>
-      <iframe id="preview" class="w-1/2 h-96 ml-2"></iframe>
+      <iframe id="preview" class="md:w-1/2 h-96 ml-2"></iframe>
     </div>
   </div>
 </div>

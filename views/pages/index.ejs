@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <%- include('../partials/head'); %>
+
     <script>
       const preview = (html) => {
         if (html && html.length > 0) {
@@ -21,14 +22,30 @@
           );
           const { height, hash } = await response.json();
           console.log({ height, hash });
-          if (height) {
-            document.querySelector(
-              "#latest-block"
-            ).innerHTML = `Latest Block: ${height}`;
-            document.querySelector("#latest-block").classList.remove("hidden");
-            document.querySelector("#latest-block").classList.add("block");
+          if (height && hash) {
             const color = stringToColor(hash);
             const color2 = stringToColor(height);
+            const blinkingCursor = document.createElement("span");
+            blinkingCursor.classList.add("animate-pulse");
+            blinkingCursor.innerHTML = "|";
+
+            document.querySelector(
+              "#latest-block"
+            ).innerHTML = `<span class="text-[${color2}]">block-${height} $</span> Your ordfs-server is up and running.<br />
+<span class="text-[${color2}]">block-${height} $</span> Derived colors ${color}, ${color2} from blockchain<br />
+<span class="text-[${color2}]">block-${height} $</span><br />
+<span class="text-[${color2}]">block-${height} $</span> Set a TXT record on your domain <br />
+<span class="text-[${color2}]">block-${height} $</span> to point to an ordinal. <br />
+<span class="text-[${color2}]">block-${height} $</span> TXT='ordfs={outpoint}'<br />
+<span class="text-[${color2}]">block-${height} $</span> Where {outpoint} is {txid}_{vout} on BSV,<br /><span class="text-[${color2}]">block-${height} $</span> and {txid}i{vin} on BTC.<br />
+<span class="text-[${color2}]">block-${height} $</span><br />
+<span class="text-[${color2}]">block-${height} $</span> Set a A or CNAME record on your domain <br />
+<span class="text-[${color2}]">block-${height} $</span> to point to your ordfs-server.<br />
+<span class="text-[${color2}]">block-${height} $</span> A=10.10.10.10 / CNAME=subdomain.mydomain.com<br /><span class="text-[${color2}]">block-${height} $</span> `;
+            document.querySelector("#latest-block").appendChild(blinkingCursor);
+            document.querySelector("#latest-block").classList.remove("hidden");
+            document.querySelector("#latest-block").classList.add("block");
+
             document
               .querySelector("#latest-block")
               .classList.add(`text-[${color}]`);
@@ -66,7 +83,7 @@
     </script>
   </head>
   <body class="bg-black">
-    <div class="bg-black text-white h-screen">
+    <div class="bg-black text-white min-h-screen">
       <header class="relative"><%- include('../partials/header'); %></header>
     </div>
     <section class="relative transform-gpu overflow-hidden" aria-hidden="true">
