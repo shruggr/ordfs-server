@@ -40,13 +40,15 @@ async function loadPointerFromDNS(hostname) {
     const TXTs = await dns.resolveTxt(hostname);
     const prefix = "ordfs=";
     let pointer = '';
-    for (let TXT of TXTs) {
+    console.log('Lookup Up:', hostname);
+    outer: for (let TXT of TXTs) {
         for (let elem of TXT) {
             if (!elem.startsWith(prefix))
                 continue;
             console.log("Elem:", elem);
             pointer = elem.slice(prefix.length);
             console.log("Origin:", pointer);
+            break outer;
         }
     }
     if (!pointer) {
