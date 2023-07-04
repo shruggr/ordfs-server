@@ -67,7 +67,7 @@ function RegisterRoutes(app) {
             try {
                 // check if its an ordfs directory
                 file = await (0, lib_1.loadInscription)(filename);
-                if (file.type === "ord-fs/json" && !req.params.raw) {
+                if (file.type === "ord-fs/json" && !req.query.raw) {
                     (_a = req.res) === null || _a === void 0 ? void 0 : _a.redirect(`/${filename}/index.html`);
                     return;
                 }

@@ -74,7 +74,7 @@ export function RegisterRoutes(app: express.Express) {
       try {
         // check if its an ordfs directory
         file = await loadInscription(filename);
-        if (file.type === "ord-fs/json" && !req.params.raw) {
+        if (file.type === "ord-fs/json" && !req.query.raw) {
           req.res?.redirect(`/${filename}/index.html`);
           return;
         }
