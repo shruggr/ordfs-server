@@ -28,9 +28,7 @@
       };
       const fetchBlockStats = async () => {
         try {
-          const response = await fetch(
-            "https://ordinals.shruggr.cloud/v1/bsv/block/latest"
-          );
+          const response = await fetch("/v1/bsv/block/latest");
           const { height, hash } = await response.json();
           console.log({ height, hash });
           if (height && hash) {

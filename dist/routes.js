@@ -38,7 +38,7 @@ function RegisterRoutes(app) {
         res.json(await (0, lib_1.getLatestBlock)(req.params.network));
     });
     app.get("/v1/:network/tx/:txid", async (req, res, next) => {
-        res.set('Content-type', 'application/octet-stream');
+        res.set("Content-type", "application/octet-stream");
         res.send(await (0, lib_1.getRawTx)(req.params.network, req.params.txid));
     });
     app.get("/:filename", loadFileOrOrdfs);

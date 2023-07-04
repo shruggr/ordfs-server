@@ -1,8 +1,14 @@
-import * as express from 'express';
-import { Response } from 'express';
-import { NotFound } from 'http-errors';
-import { File, OrdFS, getLatestBlock, getRawTx, loadInscription, loadPointerFromDNS } from './lib';
-
+import * as express from "express";
+import { Response } from "express";
+import { NotFound } from "http-errors";
+import {
+  File,
+  OrdFS,
+  getLatestBlock,
+  getRawTx,
+  loadInscription,
+  loadPointerFromDNS,
+} from "./lib";
 
 function sendFile(file: File, res: Response) {
   res.header("Content-Type", file.type || "");
@@ -35,19 +41,18 @@ export function RegisterRoutes(app: express.Express) {
   });
 
   app.get("/v1/:network/block/latest", async (req, res, next) => {
-      res.json(await getLatestBlock(req.params.network));
+    res.json(await getLatestBlock(req.params.network));
   });
 
   app.get("/v1/:network/tx/:txid", async (req, res, next) => {
-      res.set('Content-type', 'application/octet-stream')
-      res.send(await getRawTx(req.params.network, req.params.txid));
+    res.set("Content-type", "application/octet-stream");
+    res.send(await getRawTx(req.params.network, req.params.txid));
   });
   app.get("/:filename", loadFileOrOrdfs);
   app.get("/content/:filename", loadFileOrOrdfs);
   app.get("/preview/:b64HtmlData", previewHtmlFromB64Data);
   app.get("/:pointer/:filename", loadFile);
   app.get("/content/:pointer/:filename", loadFile);
-
 
   async function previewHtmlFromB64Data(req, res, next) {
     try {
