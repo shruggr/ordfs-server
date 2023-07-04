@@ -34,9 +34,8 @@ export function RegisterRoutes(app: express.Express) {
       }
       sendFile(file, res);
     } catch (err) {
-      // inscription not found
+      // TODO: inscription not found
       res.render("pages/404");
-      // next(err);
     }
   });
 

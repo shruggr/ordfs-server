@@ -29,9 +29,8 @@ function RegisterRoutes(app) {
             sendFile(file, res);
         }
         catch (err) {
-            // inscription not found
+            // TODO: inscription not found
             res.render("pages/404");
-            // next(err);
         }
     });
     app.get("/v1/:network/block/latest", async (req, res, next) => {

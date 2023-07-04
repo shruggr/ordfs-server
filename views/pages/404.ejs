@@ -2,99 +2,164 @@
 <html lang="en">
   <head>
     <%- include('../partials/head'); %>
+
+    <script>
+      function getComplementaryDarkColor(lightColor) {
+        const rgb = lightColor
+          .match(/[A-Za-z0-9]{2}/g)
+          .map((component) => parseInt(component, 16));
+        const darkColor = rgb.map((component) => Math.max(0, component - 50));
+        const darkHexColor = `#${darkColor
+          .map((component) => component.toString(16).padStart(2, "0"))
+          .join("")}`;
+        return darkHexColor;
+      }
+
+      const preview = (html) => {
+        if (html && html.length > 0) {
+          try {
+            // set iframe src to b64 encoded html
+            const b64 = btoa(html);
+            document.querySelector("#preview").src = "/preview/" + b64;
+          } catch (e) {
+            console.error("Invalid base64 encoded html");
+          }
+        }
+      };
+
+      const fetchBlockStats = async () => {
+        try {
+          const response = await fetch("/v1/bsv/block/latest");
+          const { height, hash } = await response.json();
+          console.log({ height, hash });
+          if (height && hash) {
+            const color = stringToColor(hash);
+            const color2 = stringToColor(height);
+            const blinkingCursor = document.createElement("span");
+            blinkingCursor.classList.add("animate-pulse");
+            blinkingCursor.innerHTML = "|";
+
+            document.querySelector(
+              "#latest-block"
+            ).innerHTML = `<span class="text-[${color2}]">block-${height} $</span> <span class="text-emerald-200">Your ordfs-server is up and running.</span><br />
+<span class="text-[${color2}]">block-${height} $</span> <span class="bg-clip-text text-transparent bg-gradient-to-r to-[${color}] from-[${color2}]">Terminal colors derived from blockchain data</span><br />
+<span class="text-[${color2}]">block-${height} $</span> Latest block hash <span class="bg-clip-text text-transparent bg-gradient-to-r to-[${color}] from-[${color2}]">${hash.slice(
+              -10
+            )}</span><br />
+            <span class="text-[${color2}]">block-${height} $</span><br />
+            <span class="text-[${color2}]">block-${height} $</span> <span class="text-emerald-200">DNS Record Found, Checking for Ordinal...</span><br />
+<span class="text-[${color2}]">block-${height} $</span> <span class="text-red-400">There's a problem with your configuration.</span><br />
+<span class="text-[${color2}]">block-${height} $</span> <span class="text-red-400">Inscription not found!</span> <br />
+<span class="text-[${color2}]">block-${height} $</span><br />
+<span class="text-[${color2}]">block-${height} $</span> Make sure your <span class="text-[${color2}]">TXT</span> record is correct <br />
+<span class="text-[${color2}]">block-${height} $</span> and to point to valid ordinal inscription ID. <br />
+<span class="text-[${color2}]">block-${height} $</span><br />
+<span class="text-[${color2}]">block-${height} $</span> TXT='ordfs=<span class="text-[${color2}]">inscriptionId</span>'<br />
+<span class="text-[${color2}]">block-${height} $</span> Where <span class="text-[${color2}]">inscriptionId</span> is <span class="text-[${color2}]">txid</span>_<span class="text-[${color2}]">vout</span> on BSV,<br /><span class="text-[${color2}]">block-${height} $</span> and {<span class="text-[${color2}]">txid</span>}i{<span class="text-[${color2}]">vin</span>} on BTC.<br />
+<span class="text-[${color2}]">block-${height} $</span><br />
+<span class="text-[${color2}]">block-${height} $</span> Set a <span class="text-[${color2}]">A</span> or <span class="text-[${color2}]">CNAME</span> record on your domain <br />
+<span class="text-[${color2}]">block-${height} $</span> to point to your ordfs-server.<br />
+<span class="text-[${color2}]">block-${height} $</span> A=<span class="text-[${color2}]">10.10.10.10</span> / CNAME=<span class="text-[${color2}]">subdomain.mydomain.com</span><br /><span class="text-[${color2}]">block-${height} $</span> `;
+
+            const darkColor = getComplementaryDarkColor(color);
+            const darkColor2 = getComplementaryDarkColor(color2);
+
+            document.querySelector("#latest-block").appendChild(blinkingCursor);
+            document.querySelector("#latest-block").classList.remove("hidden");
+            document.querySelector("#latest-block").classList.add("block");
+
+            document
+              .querySelector("#latest-block")
+              .classList.add(`text-[${color}]`);
+            document
+              .querySelector("#ordfs-title")
+              .classList.add(`text-[${color2}]`);
+            Array.from(document.querySelectorAll(".api-item")).map((item) => {
+              item.classList.add(
+                "p-1",
+                "rounded",
+                "bg-[#111]",
+                "my-2",
+                `text-[${color2}]`
+              );
+            });
+
+            document
+              .querySelector("#ordfs-subtitle")
+              .classList.add(`text-[${color}]`);
+            document
+              .querySelector("#primary-button")
+              .classList.add(`bg-[${darkColor2}]`);
+            document
+              .querySelector("#secondary-button")
+              .classList.add(`bg-[${darkColor}]`);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      document.addEventListener("DOMContentLoaded", async () => {
+        await fetchBlockStats();
+      });
+
+      function stringToColor(input) {
+        input = input.toString();
+
+        let hash = 0;
+        for (let i = 0; i < input.length; i++) {
+          hash = input.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        const hue = hash % 360;
+        const saturation = 75;
+        const lightness = 75;
+
+        const rgbColor = hslToRgb(hue, saturation, lightness);
+        const color = rgbToHex(rgbColor);
+
+        return color;
+      }
+
+      function hslToRgb(h, s, l) {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+
+        const hueToRgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+          return p;
+        };
+
+        const r = hueToRgb(p, q, h + 1 / 3);
+        const g = hueToRgb(p, q, h);
+        const b = hueToRgb(p, q, h - 1 / 3);
+
+        return {
+          r: Math.round(r * 255),
+          g: Math.round(g * 255),
+          b: Math.round(b * 255),
+        };
+      }
+
+      function rgbToHex(rgb) {
+        const toHex = (c) => c.toString(16).padStart(2, "0");
+        const { r, g, b } = rgb;
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+      }
+    </script>
   </head>
   <body class="bg-black">
-    <div class="bg-black text-white">
-      <header class="absolute inset-x-0 top-0 z-50">
-        <%- include('../partials/header'); %>
-      </header>
-
-      <div class="relative isolate px-6 pt-14 lg:px-8">
-        <div
-          class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
-          aria-hidden="true"
-        >
-          <div
-            class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
-            style="
-              clip-path: polygon(
-                74.1% 44.1%,
-                100% 61.6%,
-                97.5% 26.9%,
-                85.5% 0.1%,
-                80.7% 2%,
-                72.5% 32.5%,
-                60.2% 62.4%,
-                52.4% 68.1%,
-                47.5% 58.3%,
-                45.2% 34.5%,
-                27.5% 76.7%,
-                0.1% 64.9%,
-                17.9% 100%,
-                27.6% 76.8%,
-                76.1% 97.7%,
-                74.1% 44.1%
-              );
-            "
-          ></div>
-        </div>
-        <div class="mx-auto max-w-2xl">
-          <div class="text-center">
-            <h1
-              id="ordfs-title"
-              class="text-6xl font-bold tracking-tight text-gray-200 sm:text-6xl"
-            >
-              ORD-FS
-            </h1>
-            <p class="mt-6 text-lg leading-8 text-gray-100">
-              There's a problem with your configuration.
-            </p>
-            <p class="mt-6 text-lg leading-8 text-gray-100 bg-[#111]">
-              We found a DNS record pointing to this server, but we couldn't
-              find the inscription.
-            </p>
-
-            <div class="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="https://github.com/shruggr/ordfs-server"
-                class="rounded-md bg-emerald-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition"
-              >
-                Read Documentation
-              </a>
-            </div>
-          </div>
-        </div>
-        <div
-          class="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
-          aria-hidden="true"
-        >
-          <div
-            class="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
-            style="
-              clip-path: polygon(
-                74.1% 44.1%,
-                100% 61.6%,
-                97.5% 26.9%,
-                85.5% 0.1%,
-                80.7% 2%,
-                72.5% 32.5%,
-                60.2% 62.4%,
-                52.4% 68.1%,
-                47.5% 58.3%,
-                45.2% 34.5%,
-                27.5% 76.7%,
-                0.1% 64.9%,
-                17.9% 100%,
-                27.6% 76.8%,
-                76.1% 97.7%,
-                74.1% 44.1%
-              );
-            "
-          ></div>
-        </div>
-      </div>
+    <div class="bg-black text-white min-h-screen">
+      <header class="relative"><%- include('../partials/header'); %></header>
     </div>
 
-    <footer><%- include('../partials/footer'); %></footer>
+    <footer class=""><%- include('../partials/footer'); %></footer>
   </body>
 </html>
