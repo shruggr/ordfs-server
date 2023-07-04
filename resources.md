@@ -1,0 +1,10 @@
+images:
+
+ordfs logo, svg:
+971388081f6601b0e502adbfceef68d152e7f27ba5aff0230d2567aaa8acb768_0
+
+1sat favicon:
+eb6f151ee52b5d65cb89481e89e76655e6af83f697f0af88b7ccf46e3174baaa_0
+
+screenShot.png
+e679d48482ab42eefd36c2f5e3f52e8797d1a2cc7c7c78f1cd158b9b8b69ac19_0
