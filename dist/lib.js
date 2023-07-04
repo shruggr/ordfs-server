@@ -9,30 +9,30 @@ const provider_1 = require("./provider");
 let btcProvider = new provider_1.BtcProvider();
 let bsvProvider = new provider_1.JungleBusProvider();
 if (process.env.BITCOIN_HOST) {
-    bsvProvider = new provider_1.RpcProvider('bsv', process.env.BITCOIN_HOST || '', process.env.BITCOIN_PORT || '8332', process.env.BITCOIN_USER || '', process.env.BITCOIN_PASS || '');
+    bsvProvider = new provider_1.RpcProvider("bsv", process.env.BITCOIN_HOST || "", process.env.BITCOIN_PORT || "8332", process.env.BITCOIN_USER || "", process.env.BITCOIN_PASS || "");
 }
 if (process.env.BTC_HOST) {
-    btcProvider = new provider_1.RpcProvider('btc', process.env.BTC_HOST || '', process.env.BTC_PORT || '8332', process.env.BTC_USER || '', process.env.BTC_PASS || '');
+    btcProvider = new provider_1.RpcProvider("btc", process.env.BTC_HOST || "", process.env.BTC_PORT || "8332", process.env.BTC_USER || "", process.env.BTC_PASS || "");
 }
 async function getLatestBlock(network) {
     switch (network) {
-        case 'btc':
+        case "btc":
             return btcProvider.getBlockchainInfo();
-        case 'bsv':
+        case "bsv":
             return bsvProvider.getBlockchainInfo();
         default:
-            throw new http_errors_1.NotFound('Network Not Found');
+            throw new http_errors_1.NotFound("Network Not Found");
     }
 }
 exports.getLatestBlock = getLatestBlock;
 async function getRawTx(network, txid) {
     switch (network) {
-        case 'btc':
+        case "btc":
             return btcProvider.getRawTx(txid);
-        case 'bsv':
+        case "bsv":
             return bsvProvider.getRawTx(txid);
         default:
-            throw new http_errors_1.NotFound('Network Not Found');
+            throw new http_errors_1.NotFound("Network Not Found");
     }
 }
 exports.getRawTx = getRawTx;
@@ -40,8 +40,8 @@ async function loadPointerFromDNS(hostname) {
     const lookupDomain = `_ordfs.${hostname}`;
     const TXTs = await dns.resolveTxt(lookupDomain);
     const prefix = "ordfs=";
-    let pointer = '';
-    console.log('Lookup Up:', lookupDomain);
+    let pointer = "";
+    console.log("Lookup Up:", lookupDomain);
     outer: for (let TXT of TXTs) {
         for (let elem of TXT) {
             if (!elem.startsWith(prefix))
@@ -62,21 +62,21 @@ async function loadInscription(pointer) {
     console.log("loadInscription", pointer);
     let script;
     if (pointer.match(/^[0-9a-fA-F]{64}_\d*$/)) {
-        const [txid, vout] = pointer.split('_');
-        console.log('BSV:', txid, vout);
+        const [txid, vout] = pointer.split("_");
+        console.log("BSV:", txid, vout);
         const rawtx = await bsvProvider.getRawTx(txid);
         const tx = core_1.Tx.fromBuffer(rawtx);
         script = tx.txOuts[parseInt(vout, 10)].script;
     }
     else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
-        const [txid, vin] = pointer.split('i');
-        console.log('BTC', txid, vin);
+        const [txid, vin] = pointer.split("i");
+        console.log("BTC", txid, vin);
         const rawtx = await btcProvider.getRawTx(txid);
         const tx = new bitcore_lib_1.Transaction(rawtx);
         script = core_1.Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
     }
     else
-        throw new Error('Invalid Pointer');
+        throw new Error("Invalid Pointer");
     if (!script)
         throw new http_errors_1.NotFound();
     const file = parseScript(script);
@@ -98,7 +98,7 @@ function parseScript(script) {
         if (chunk.opCodeNum === core_1.OpCode.OP_IF) {
             opIf = i;
         }
-        if ((_a = chunk.buf) === null || _a === void 0 ? void 0 : _a.equals(Buffer.from('ord', 'utf8'))) {
+        if ((_a = chunk.buf) === null || _a === void 0 ? void 0 : _a.equals(Buffer.from("ord", "utf8"))) {
             if (opFalse === i - 2 && opIf === i - 1) {
                 opORD = i;
                 lock.chunks = script.chunks.slice(0, i - 2);
@@ -107,7 +107,7 @@ function parseScript(script) {
         }
         lock.chunks.push(chunk);
     }
-    let type = 'application/octet-stream';
+    let type = "application/octet-stream";
     let data = Buffer.alloc(0);
     for (let i = opORD + 1; i < script.chunks.length; i++) {
         // console.log(script.chunks[i])
@@ -124,7 +124,7 @@ function parseScript(script) {
                 if (script.chunks[i].buf[0] != 1)
                     return;
             case core_1.OpCode.OP_TRUE:
-                type = script.chunks[i + 1].buf.toString('utf8');
+                type = script.chunks[i + 1].buf.toString("utf8");
                 // console.log("Type:", type)
                 i++;
                 break;
