@@ -44,6 +44,8 @@ function RegisterRoutes(app) {
     app.get("/:filename", loadFileOrOrdfs);
     app.get("/content/:filename", loadFileOrOrdfs);
     app.get("/preview/:b64HtmlData", previewHtmlFromB64Data);
+    app.get("/:pointer/:filename", loadFile);
+    app.get("/content/:pointer/:filename", loadFile);
     async function previewHtmlFromB64Data(req, res, next) {
         try {
             const b64HtmlData = req.params.b64HtmlData;
@@ -85,8 +87,6 @@ function RegisterRoutes(app) {
             next(err);
         }
     }
-    app.get("/:pointer/:filename", loadFile);
-    app.get("/content/:pointer/:filename", loadFile);
     async function loadFile(req, res, next) {
         try {
             let pointer = req.params.pointer;
