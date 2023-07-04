@@ -2,6 +2,11 @@
 
 This project provides an ExpressJS server to host your website from an Ordinal.
 
+### Prerequisites
+- NodeJS (v18+)
+- NPM (comes with NodeJS)
+- tsc (npm install -g typescript)
+
 ### Stand-alone
 `npm install`
 `npm run start`
