@@ -34,6 +34,13 @@ function RegisterRoutes(app) {
             // next(err);
         }
     });
+    app.get("/v1/:network/block/latest", async (req, res, next) => {
+        res.json(await (0, lib_1.getLatestBlock)(req.params.network));
+    });
+    app.get("/v1/:network/tx/:txid", async (req, res, next) => {
+        res.set('Content-type', 'application/octet-stream');
+        res.send(await (0, lib_1.getRawTx)(req.params.network, req.params.txid));
+    });
     app.get("/:filename", loadFileOrOrdfs);
     app.get("/content/:filename", loadFileOrOrdfs);
     app.get("/preview/:b64HtmlData", previewHtmlFromB64Data);

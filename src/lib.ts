@@ -2,9 +2,9 @@ import { OpCode, Script, Tx } from "@ts-bitcoin/core";
 import { Transaction } from 'bitcore-lib';
 import * as dns from 'dns/promises'
 import { NotFound } from 'http-errors';
-import { ITxProvider, JungleBusProvider, RpcProvider } from "./provider";
+import { BtcProvider, ITxProvider, JungleBusProvider, RpcProvider } from "./provider";
 
-let btcProvider: ITxProvider | undefined;
+let btcProvider: ITxProvider = new BtcProvider();
 let bsvProvider: ITxProvider = new JungleBusProvider();
 
 if (process.env.BITCOIN_HOST) {
@@ -25,6 +25,28 @@ if (process.env.BTC_HOST) {
         process.env.BTC_USER || '',
         process.env.BTC_PASS || '',
     );
+}
+
+export async function getLatestBlock(network: string): Promise<{height: number, hash: string}> {
+    switch (network) {
+        case 'btc':
+            return btcProvider.getBlockchainInfo();
+        case 'bsv':
+            return bsvProvider.getBlockchainInfo();
+        default:
+            throw new NotFound('Network Not Found');
+    }
+}
+
+export async function getRawTx(network: string, txid: string): Promise<Buffer> {
+    switch (network) {
+        case 'btc':
+            return btcProvider.getRawTx(txid);
+        case 'bsv':
+            return bsvProvider.getRawTx(txid);
+        default:
+            throw new NotFound('Network Not Found');
+    }
 }
 
 export async function loadPointerFromDNS(hostname: string): Promise<string> {
