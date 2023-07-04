@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { Response } from 'express';
 import { NotFound } from 'http-errors';
-import { File, OrdFS, loadInscription, loadPointerFromDNS } from './lib';
+import { File, OrdFS, getLatestBlock, getRawTx, loadInscription, loadPointerFromDNS } from './lib';
 
 function sendFile(file: File, res: Response) {
     res.header('Content-Type', file.type || '');
@@ -22,6 +22,15 @@ export function RegisterRoutes(app: express.Express) {
         } catch (err) {
             next(err);
         }
+    });
+
+    app.get("/v1/:network/block/latest", async (req, res, next) => {
+        res.json(await getLatestBlock(req.params.network));
+    });
+    
+    app.get("/v1/:network/tx/:txid", async (req, res, next) => {
+        res.set('Content-type', 'application/octet-stream')
+        res.send(await getRawTx(req.params.network, req.params.txid));
     });
 
     app.get("/:filename", loadFileOrOrdfs);

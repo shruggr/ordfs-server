@@ -1,9 +1,12 @@
 import * as Client from "bitcoin-core";
 import { JungleBusClient } from "@gorillapool/js-junglebus";
+import 'cross-fetch/polyfill'
+import createError from 'http-errors';
 
 export interface ITxProvider {
     network: string;
     getRawTx: (string) => Promise<Buffer>
+    getBlockchainInfo: () => Promise<{height: number, hash: string}>
 }
 
 export class RpcProvider implements ITxProvider {
@@ -23,7 +26,16 @@ export class RpcProvider implements ITxProvider {
             extension: 'bin'
         })
     }
+
+    async getBlockchainInfo(): Promise<{height: number, hash: string}> {
+        const info = await this.client.getBlockchainInfo();
+        return {
+            height: info.blocks,
+            hash: info.bestblockhash
+        }
+    }
 }
+
 export class JungleBusProvider implements ITxProvider {
     public network = 'bsv';
 
@@ -32,4 +44,37 @@ export class JungleBusProvider implements ITxProvider {
         const txnData = await jb.GetTransaction(txid);
         return Buffer.from(txnData!.transaction, 'base64');
     }
+
+    async getBlockchainInfo(): Promise<{height: number, hash: string}> {
+        const resp = await fetch('https://api.whatsonchain.com/v1/bsv/main/block/headers/latest');
+        if (!resp.ok) {
+            throw createError(resp.status, resp.statusText);
+        }
+        const info = await resp.json()
+        return {
+            height: info.height,
+            hash: info.hash
+        }
+    }
+}
+
+export class BtcProvider implements ITxProvider {
+    public network = 'btc';
+
+    async getRawTx(txid: string): Promise<Buffer> {
+        const resp = await fetch('https://ordinals.shruggr.cloud/v1/btc/block/latest');
+        if (!resp.ok) {
+            throw createError(resp.status, resp.statusText);
+        }
+        return resp.json()
+    }
+
+    async getBlockchainInfo(): Promise<{height: number, hash: string}> {
+        const resp = await fetch('https://ordinals.shruggr.cloud/v1/btc/block/latest');
+        if (!resp.ok) {
+            throw createError(resp.status, resp.statusText);
+        }
+        return resp.json()
+
+    }   
 }

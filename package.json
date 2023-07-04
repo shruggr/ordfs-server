@@ -23,7 +23,9 @@
     "bitcoin-core": "^4.1.0",
     "bitcore-lib": "^10.0.5",
     "cors": "^2.8.5",
+    "cross-fetch": "^4.0.0",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "http-errors": "^2.0.0"
   }
 }

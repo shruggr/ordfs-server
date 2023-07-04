@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseScript = exports.loadInscription = exports.loadPointerFromDNS = void 0;
+exports.parseScript = exports.loadInscription = exports.loadPointerFromDNS = exports.getRawTx = exports.getLatestBlock = void 0;
 const core_1 = require("@ts-bitcoin/core");
 const bitcore_lib_1 = require("bitcore-lib");
 const dns = require("dns/promises");
 const http_errors_1 = require("http-errors");
 const provider_1 = require("./provider");
-let btcProvider;
+let btcProvider = new provider_1.BtcProvider();
 let bsvProvider = new provider_1.JungleBusProvider();
 if (process.env.BITCOIN_HOST) {
     bsvProvider = new provider_1.RpcProvider('bsv', process.env.BITCOIN_HOST || '', process.env.BITCOIN_PORT || '8332', process.env.BITCOIN_USER || '', process.env.BITCOIN_PASS || '');
@@ -14,6 +14,28 @@ if (process.env.BITCOIN_HOST) {
 if (process.env.BTC_HOST) {
     btcProvider = new provider_1.RpcProvider('btc', process.env.BTC_HOST || '', process.env.BTC_PORT || '8332', process.env.BTC_USER || '', process.env.BTC_PASS || '');
 }
+async function getLatestBlock(network) {
+    switch (network) {
+        case 'btc':
+            return btcProvider.getBlockchainInfo();
+        case 'bsv':
+            return bsvProvider.getBlockchainInfo();
+        default:
+            throw new http_errors_1.NotFound('Network Not Found');
+    }
+}
+exports.getLatestBlock = getLatestBlock;
+async function getRawTx(network, txid) {
+    switch (network) {
+        case 'btc':
+            return btcProvider.getRawTx(txid);
+        case 'bsv':
+            return bsvProvider.getRawTx(txid);
+        default:
+            throw new http_errors_1.NotFound('Network Not Found');
+    }
+}
+exports.getRawTx = getRawTx;
 async function loadPointerFromDNS(hostname) {
     const TXTs = await dns.resolveTxt(hostname);
     const prefix = "ordfs=";
