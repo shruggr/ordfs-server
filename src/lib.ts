@@ -57,16 +57,20 @@ export async function getRawTx(network: string, txid: string): Promise<Buffer> {
 }
 
 export async function loadPointerFromDNS(hostname: string): Promise<string> {
-  console.log("load pointer from", hostname);
-  const TXTs = await dns.resolveTxt(hostname);
-  const prefix = "ordfs=";
-  let pointer = "";
-  for (let TXT of TXTs) {
-    for (let elem of TXT) {
-      if (!elem.startsWith(prefix)) continue;
-      console.log("Elem:", elem);
-      pointer = elem.slice(prefix.length);
-      console.log("Origin:", pointer);
+    const lookupDomain = `_ordfs.${hostname}`;
+    const TXTs = await dns.resolveTxt(lookupDomain);
+    const prefix = "ordfs=";
+    let pointer = '';
+    console.log('Lookup Up:', lookupDomain);
+    outer:
+    for (let TXT of TXTs) {
+        for (let elem of TXT) {
+            if (!elem.startsWith(prefix)) continue;
+            console.log("Elem:", elem)
+            pointer = elem.slice(prefix.length)
+            console.log("Origin:", pointer)
+            break outer;
+        }
     }
   }
 
