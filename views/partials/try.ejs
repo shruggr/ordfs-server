@@ -1,0 +1,100 @@
+<script type="application/javascript">
+  const exampleHtml = `
+  <html>
+    <head>
+      <title>ORD-FS</title>
+    </head>
+    <body style="margin: 0; padding: 0;">
+      <div style="
+        border-radius: 0.5rem;
+        background: linear-gradient(to right, black, #800080);
+        width: 100%; align: center; height:100%; display: flex; justify-content: center; align-items: center;
+      ">
+        <img src="/971388081f6601b0e502adbfceef68d152e7f27ba5aff0230d2567aaa8acb768_0" style="width:100px;" />
+      </div>
+    </body>
+  </html>`;
+
+  const tryItOut = () => {
+    let html = document.querySelector("#html").value;
+    document.querySelector("#tryItOut").classList.remove("hidden");
+    document.querySelector("#tryItOut").classList.add("block");
+
+    if (!html || html.length === 0) {
+      html = exampleHtml.trim();
+      document.querySelector("#html").value = html;
+    }
+    console.log({ html });
+    try {
+      // Display the HTML code as plain text in the 'preview' element
+      const b64 = btoa(html);
+      document.querySelector("#preview").src = `/preview/${b64}`;
+    } catch (e) {
+      console.error("Error displaying HTML code");
+    }
+  };
+</script>
+<div
+  class="p-2 text-white rounded w-full max-w-6xl mx-auto flex flex-col items-center justify-center"
+  id="demo"
+>
+  <h2
+    class="mb-4 text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#673ab7] to-[#e91e63]"
+  >
+    Native Bitcoin API
+  </h2>
+  <h2 class="text-center mb-4 px-4 text-2xl">
+    For Building Programmable HTML Inscriptions
+  </h2>
+
+  <div className="w-1/2">
+    <p class="p-4 text-xl text-[#aaa] max-w-2xl">
+      Bitcoin-native endpoints allow access to other inscriptions and blockchain
+      data from within your code. You can reference JavaScript files, images,
+      and even other HTML inscriptions. You can also access blockchain data such
+      as transaction data, block data, and more!
+    </p>
+  </div>
+
+  <div class="md:w-1/2">
+    <ul>
+      <li class="text-[#aaa] my-4">Access inscriptions across chains</li>
+      <li class="api-item">/{outpoint}</li>
+      <li class="text-[#aaa] my-4">Preview your code before broadcasting</li>
+      <li class="api-item">/preview/{b64Html}</li>
+      <li class="text-[#aaa] my-4">
+        Get blockchain info. Chain can be 'bsv' or 'btc'
+      </li>
+      <li class="api-item">/{chain}/v1/block/latest</li>
+      <li class="api-item">/{chain}/v1/block/{blockHash}</li>
+      <li class="text-[#aaa] my-4">
+        Compatible with BTC recursive inscriptions
+      </li>
+      <li class="api-item">/content/{outpoint}</li>
+    </ul>
+  </div>
+
+  <div class="text-[#aaa] max-w-2xl bg-[#111] p-4 flex flex-col my-8">
+    This demo uses the preview endpoint to render inscription references in your
+    code. When you're ready, use a minter like 1satordinals.com to inscribe your
+    HTML to the blockchain.
+    <button
+      class="hover:bg-purple-800 transition my-8 font-bold cursor-pointer text-2xl bg-purple-600 text-white p-2 rounded-md hover:text-emerald-300"
+      onclick="tryItOut()"
+    >
+      <h1>Live Demo</h1>
+    </button>
+  </div>
+
+  <div id="tryItOut" class="w-full hidden max-w-7xl mx-auto">
+    <div class="flex flex-col justify-between md:flex-row">
+      <textarea
+        id="html"
+        class="bg-[#111] text-purple-400 text-xs rounded p-2 md:w-1/2 h-96 placeholder-gray-400 mr-2"
+        placeholder="<html></html>"
+        oninput="javascript:preview(this.value)"
+      ></textarea>
+      <iframe id="preview" class="md:w-1/2 h-96 ml-2"></iframe>
+    </div>
+  </div>
+</div>

@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const cors = require("cors");
 const dotenv = require("dotenv");
-dotenv.config();
 const express = require("express");
 const http_errors_1 = require("http-errors");
 const routes_1 = require("./routes");
+dotenv.config();
 const server = express();
 async function main() {
     const PORT = process.env.PORT || 8080;
@@ -13,8 +13,10 @@ async function main() {
         console.log(`Server listening on port ${PORT}`);
     });
 }
-server.set('trust proxy', true);
+server.set("trust proxy", true);
 server.use(cors({ origin: true }));
+server.set("view engine", "ejs");
+server.use("/public", express.static("public"));
 server.use((req, res, next) => {
     console.log(req.path, req.method);
     next();
