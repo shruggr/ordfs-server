@@ -32,6 +32,7 @@ server.use((req, res, next) => {
   console.log(req.path);
   next(new NotFound("Not Found"));
 });
+
 const errorMiddleware = ((
   err: TypeError | HttpError,
   req: Request,

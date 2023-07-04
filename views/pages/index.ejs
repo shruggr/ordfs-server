@@ -4,6 +4,17 @@
     <%- include('../partials/head'); %>
 
     <script>
+      function getComplementaryDarkColor(lightColor) {
+        const rgb = lightColor
+          .match(/[A-Za-z0-9]{2}/g)
+          .map((component) => parseInt(component, 16));
+        const darkColor = rgb.map((component) => Math.max(0, component - 50));
+        const darkHexColor = `#${darkColor
+          .map((component) => component.toString(16).padStart(2, "0"))
+          .join("")}`;
+        return darkHexColor;
+      }
+
       const preview = (html) => {
         if (html && html.length > 0) {
           try {
@@ -31,8 +42,8 @@
 
             document.querySelector(
               "#latest-block"
-            ).innerHTML = `<span class="text-[${color2}]">block-${height} $</span> Your ordfs-server is up and running.<br />
-<span class="text-[${color2}]">block-${height} $</span> Derived colors ${color}, ${color2} from blockchain<br />
+            ).innerHTML = `<span class="text-[${color2}]">block-${height} $</span> <span class="text-emerald-200">Your ordfs-server is up and running.</span><br />
+<span class="text-[${color2}]">block-${height} $</span> <span class="bg-clip-text text-transparent bg-gradient-to-r to-[${color}] from-[${color2}]">Derived terminal colors from blockchain data</span><br />
 <span class="text-[${color2}]">block-${height} $</span><br />
 <span class="text-[${color2}]">block-${height} $</span> Set a TXT record on your domain <br />
 <span class="text-[${color2}]">block-${height} $</span> to point to an ordinal. <br />
@@ -42,6 +53,10 @@
 <span class="text-[${color2}]">block-${height} $</span> Set a A or CNAME record on your domain <br />
 <span class="text-[${color2}]">block-${height} $</span> to point to your ordfs-server.<br />
 <span class="text-[${color2}]">block-${height} $</span> A=10.10.10.10 / CNAME=subdomain.mydomain.com<br /><span class="text-[${color2}]">block-${height} $</span> `;
+
+            const darkColor = getComplementaryDarkColor(color);
+            const darkColor2 = getComplementaryDarkColor(color2);
+
             document.querySelector("#latest-block").appendChild(blinkingCursor);
             document.querySelector("#latest-block").classList.remove("hidden");
             document.querySelector("#latest-block").classList.add("block");
@@ -52,6 +67,15 @@
             document
               .querySelector("#ordfs-title")
               .classList.add(`text-[${color2}]`);
+            document
+              .querySelector("#ordfs-subtitle")
+              .classList.add(`text-[${color}]`);
+            document
+              .querySelector("#primary-button")
+              .classList.add(`bg-[${darkColor2}]`);
+            document
+              .querySelector("#secondary-button")
+              .classList.add(`bg-[${darkColor}]`);
           }
         } catch (error) {
           console.error(error);
@@ -74,7 +98,8 @@
         // Convert hash to a hex color
         let color = "#";
         for (let i = 0; i < 3; i++) {
-          let value = ((hash >> (i * 8)) & 0xff) + 128; // Add 128 to make it pastel
+          let value = (hash >> (i * 8)) & 0xff; // Use the full range 0-255
+          value = Math.floor((value / 255) * 128) + 128; // Adjust the value to the upper half of the range
           color += ("00" + value.toString(16)).substr(-2);
         }
 
