@@ -6,7 +6,7 @@ This project provides an ExpressJS server to host your website from an Ordinal.
 `npm install`
 `npm run start`
 
-Navigate to `http://localhost:8080/txid_vout` to render an inscription.
+Navigate to `http://localhost:8080/` to view the demo page, or `http://localhost:8080/971388081f6601b0e502adbfceef68d152e7f27ba5aff0230d2567aaa8acb768_0` to render an inscription.
 
 ### Integrate with existing Express server
 ```

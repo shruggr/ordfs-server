@@ -41,13 +41,16 @@
   <h2 class="mb-4 text-4xl">Native Bitcoin API</h2>
   <h2 class="mb-4 text-xl">For Building Programmable HTML Inscriptions</h2>
 
-  <p class="p-2 text-xl text-[#aaa] max-w-2xl">
-    Bitcoin-native endpoints allow access to other inscriptions and blockchain
-    data from within your code. You can reference JavaScript files, images, and
-    even other HTML inscriptions. You can also access blockchain data such as
-    transaction data, block data, and more!
-  </p>
-  <div class="">
+  <div className="w-1/2">
+    <p class="p-2 text-xl text-[#aaa] max-w-2xl">
+      Bitcoin-native endpoints allow access to other inscriptions and blockchain
+      data from within your code. You can reference JavaScript files, images,
+      and even other HTML inscriptions. You can also access blockchain data such
+      as transaction data, block data, and more!
+    </p>
+  </div>
+
+  <div class="w-1/2">
     <ul>
       <li class="text-[#aaa] my-4">Access inscriptions across chains</li>
       <li class="text-emerald-200 p-1 rounded bg-[#111] my-1">/{outpoint}</li>
@@ -64,19 +67,27 @@
     </ul>
   </div>
 
-  <h2
-    class="my-4 cursor-pointer bg-purple-600 text-white p-2 rounded"
-    onclick="tryItOut()"
-  >
-    Live Demo
-  </h2>
-  <div id="tryItOut" class="w-full flex hidden max-w-7xl mx-auto">
-    <textarea
-      id="html"
-      class="bg-[#111] text-purple-400 text-xs rounded p-2 w-1/2 h-96 placeholder-gray-400"
-      placeholder="<html></html>"
-      oninput="javascript:preview(this.value)"
-    ></textarea>
-    <iframe id="preview" class="w-1/2 h-96"></iframe>
+  <div class="text-[#aaa] max-w-2xl bg-[#111] p-4 flex flex-col my-8">
+    This demo uses the preview endpoint to render inscription references in your
+    code. When you're ready, use a minter like 1satordinals.com to inscribe your
+    HTML to the blockchain.
+    <button
+      class="my-8 cursor-pointer bg-purple-600 text-white p-2 rounded"
+      onclick="tryItOut()"
+    >
+      Live Demo
+    </button>
+  </div>
+
+  <div id="tryItOut" class="w-full hidden max-w-7xl mx-auto">
+    <div class="flex justify-between">
+      <textarea
+        id="html"
+        class="bg-[#111] text-purple-400 text-xs rounded p-2 w-1/2 h-96 placeholder-gray-400 mr-2"
+        placeholder="<html></html>"
+        oninput="javascript:preview(this.value)"
+      ></textarea>
+      <iframe id="preview" class="w-1/2 h-96 ml-2"></iframe>
+    </div>
   </div>
 </div>
