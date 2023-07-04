@@ -71,12 +71,12 @@ export class BtcProvider implements ITxProvider {
 
   async getRawTx(txid: string): Promise<Buffer> {
     const resp = await fetch(
-      "https://ordinals.shruggr.cloud/v1/btc/block/latest"
+      `https://ordinals.shruggr.cloud/v1/btc/tx/${txid}`
     );
     if (!resp.ok) {
       throw createError(resp.status, resp.statusText);
     }
-    return resp.json();
+    return Buffer.from(await resp.arrayBuffer());
   }
 
   async getBlockchainInfo(): Promise<{ height: number; hash: string }> {

@@ -30,6 +30,18 @@ RegisterRoutes(app);
 2. `TXT` record for the same domain, which points sever to InscriptionId which should function as home page for the domain
    - `ordfs=<InscriptionID>` 
 
+### Usage
+To get block height and hash, make a GET request to `/v1/{network}/block/latest`
+
+```html
+<script type="application/javascript">
+   document.addEventListener("DOMContentLoaded", async () => {
+      const response = await fetch("/v1/bsv/block/latest");
+      const { height, hash } = await response.json();
+      console.log("Welcome to ORD-FS", { height, hash });
+   });
+</script>
+```
 
 ### Config
 #### BTC Node

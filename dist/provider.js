@@ -56,11 +56,11 @@ class BtcProvider {
         this.network = "btc";
     }
     async getRawTx(txid) {
-        const resp = await fetch("https://ordinals.shruggr.cloud/v1/btc/block/latest");
+        const resp = await fetch(`https://ordinals.shruggr.cloud/v1/btc/tx/${txid}`);
         if (!resp.ok) {
             throw (0, http_errors_1.default)(resp.status, resp.statusText);
         }
-        return resp.json();
+        return Buffer.from(await resp.arrayBuffer());
     }
     async getBlockchainInfo() {
         const resp = await fetch("https://ordinals.shruggr.cloud/v1/btc/block/latest");
