@@ -33,7 +33,8 @@
         id="ordfs-title"
         class="text-6xl font-bold tracking-tight sm:text-9xl transition"
       >
-        ORD-FS
+        <%= process.env.ORDFS_NAME == undefined ? 'ORD-FS' :
+        process.env.ORDFS_NAME %>
       </h1>
       <h2 id="ordfs-subtitle" class="mt-6 text-2xl leading-8">
         Bitcoin > Internet 😎
