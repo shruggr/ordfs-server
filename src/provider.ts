@@ -16,12 +16,10 @@ if (process.env.REDIS_HOST) {
 
 export interface ITxProvider {
   network: string;
-  getRawTx: (txid: string) => Promise<Buffer | undefined>;
+  getRawTx: (string) => Promise<Buffer>;
   getBlockchainInfo: () => Promise<{ height: number; hash: string }>;
-  getBlockByHeight: (
-    height: number
-  ) => Promise<{ height: number; hash: string }>;
-  getBlockByHash: (hash: string) => Promise<{ height: number; hash: string }>;
+  getBlockByHeight: (number) => Promise<{ height: number; hash: string }>;
+  getBlockByHash: (string) => Promise<{ height: number; hash: string }>;
 }
 
 export class RpcProvider implements ITxProvider {
@@ -85,16 +83,13 @@ export class RpcProvider implements ITxProvider {
 export class JungleBusProvider implements ITxProvider {
   public network = "bsv";
 
-  async getRawTx(txid: string): Promise<Buffer | undefined> {
+  async getRawTx(txid: string): Promise<Buffer> {
     let rawtx = await redis?.getBuffer(`rawtx:${txid}`);
     if (!rawtx) {
       const jb = new JungleBusClient("https://junglebus.gorillapool.io");
       const txnData = await jb.GetTransaction(txid);
-      if (txnData && txnData.transaction) {
-        rawtx = Buffer.from(txnData!.transaction, "base64");
-        redis?.set(`rawtx:${txid}`, rawtx);
-      }
-      return;
+      rawtx = Buffer.from(txnData!.transaction, "base64");
+      redis?.set(`rawtx:${txid}`, rawtx);
     }
     return rawtx;
   }

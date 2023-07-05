@@ -15,5 +15,6 @@ module.exports = {
     // Place your custom rules here
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "no-fallthrough": "off",
   },
 };

@@ -119,13 +119,14 @@ export async function loadInscription(pointer: string): Promise<File> {
     const [txid, vout] = pointer.split("_");
     console.log("BSV:", txid, vout);
     const rawtx = await bsvProvider.getRawTx(txid);
-    if (!rawtx) throw new Error("Invalid Pointer");
+    if (!rawtx) throw new Error("No raw tx found");
     const tx = Tx.fromBuffer(rawtx);
     script = tx.txOuts[parseInt(vout, 10)].script;
   } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
     const [txid, vin] = pointer.split("i");
     console.log("BTC", txid, vin);
     const rawtx = await btcProvider.getRawTx(txid);
+    if (!rawtx) throw new Error("No raw tx found");
     const tx = new Transaction(rawtx);
     script = Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
   } else throw new Error("Invalid Pointer");
@@ -183,9 +184,9 @@ export function parseScript(script: Script): File | undefined {
         }
         break;
       case 1:
+        // treat 1 like OP_1 (BTC convention)
         // console.log(script.chunks[i].toString('hex'))
         if (script.chunks[i].buf![0] != 1) return;
-        break;
       case OpCode.OP_TRUE:
         type = script.chunks[i + 1]!.buf!.toString("utf8");
         // console.log("Type:", type)
