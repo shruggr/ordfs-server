@@ -76,11 +76,11 @@ export function RegisterRoutes(app: express.Express) {
     res.set("Content-type", "application/octet-stream");
     res.send(await getRawTx(req.params.network, req.params.txid));
   });
-  app.get("/:filename", loadFileOrOrdfs);
-  app.get("/content/:filename", loadFileOrOrdfs);
+  app.get("/:filename", getInscriptionOrDnsFile);
+  app.get("/content/:pointer", getInscription);
   app.get("/preview/:b64HtmlData", previewHtmlFromB64Data);
-  app.get("/:pointer/:filename", loadFile);
-  app.get("/content/:pointer/:filename", loadFile);
+  app.get("/:pointer/:filename", getOrdfsFile);
+  app.get("/content/:pointer/:filename", getOrdfsFile);
 
   async function previewHtmlFromB64Data(req, res, next) {
     try {
@@ -92,7 +92,7 @@ export function RegisterRoutes(app: express.Express) {
     }
   }
 
-  async function loadFileOrOrdfs(req, res, next) {
+  async function getInscriptionOrDnsFile(req, res, next) {
     const filename = req.params.filename;
     try {
       let pointer: string;
@@ -123,7 +123,22 @@ export function RegisterRoutes(app: express.Express) {
     }
   }
 
-  async function loadFile(req, res, next) {
+  async function getInscription(req, res, next) {
+    const pointer = req.params.pointer;
+    try {
+      const file = await loadInscription(pointer);
+      // check if its an ordfs directory
+      if (file.type === "ord-fs/json" && !req.query.raw) {
+        req.res?.redirect(`/${pointer}/index.html`);
+        return;
+      }
+      sendFile(file, res, true);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async function getOrdfsFile(req, res, next) {
     try {
       let pointer = req.params.pointer;
       const filename = req.params.filename;
