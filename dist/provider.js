@@ -45,6 +45,17 @@ class RpcProvider {
             hash: info.bestblockhash,
         };
     }
+    async getBlockByHeight(height) {
+        const hash = await this.client.getBlockHash(height);
+        return { height, hash };
+    }
+    async getBlockByHash(hash) {
+        const info = await this.client.getBlockHeader(hash);
+        return {
+            height: info.height,
+            hash,
+        };
+    }
 }
 exports.RpcProvider = RpcProvider;
 class JungleBusProvider {
@@ -72,6 +83,19 @@ class JungleBusProvider {
             hash: info[0].hash,
         };
     }
+    async getBlockByHeight(height) {
+        const resp = await fetch(`https://api.whatsonchain.com/v1/bsv/main/block/height/${height}`);
+        const info = await resp.json();
+        return { height, hash: info.hash };
+    }
+    async getBlockByHash(hash) {
+        const resp = await fetch(`https://api.whatsonchain.com/v1/bsv/main/block/hash/${hash}`);
+        const info = await resp.json();
+        return {
+            height: info.height,
+            hash,
+        };
+    }
 }
 exports.JungleBusProvider = JungleBusProvider;
 class BtcProvider {
@@ -96,6 +120,19 @@ class BtcProvider {
             throw (0, http_errors_1.default)(resp.status, resp.statusText);
         }
         return resp.json();
+    }
+    async getBlockByHeight(height) {
+        const resp = await fetch(`https://ordinals.shruggr.cloud/v1/btc/block/height/${height}`);
+        const info = await resp.json();
+        return { height, hash: info.hash };
+    }
+    async getBlockByHash(hash) {
+        const resp = await fetch(`https://ordinals.shruggr.cloud/v1/btc/block/hash/${hash}`);
+        const info = await resp.json();
+        return {
+            height: info.height,
+            hash,
+        };
     }
 }
 exports.BtcProvider = BtcProvider;

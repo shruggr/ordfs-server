@@ -36,7 +36,28 @@ function RegisterRoutes(app) {
         }
     });
     app.get("/v1/:network/block/latest", async (req, res, next) => {
-        res.json(await (0, lib_1.getLatestBlock)(req.params.network));
+        try {
+            res.json(await (0, lib_1.getLatestBlock)(req.params.network));
+        }
+        catch (e) {
+            next(e);
+        }
+    });
+    app.get("/v1/:network/block/height/:height", async (req, res, next) => {
+        try {
+            res.json(await (0, lib_1.getBlockByHeight)(req.params.network, parseInt(req.params.height, 10)));
+        }
+        catch (e) {
+            next(e);
+        }
+    });
+    app.get("/v1/:network/block/hash/:hash", async (req, res, next) => {
+        try {
+            res.json(await (0, lib_1.getBlockByHash)(req.params.network, req.params.hash));
+        }
+        catch (e) {
+            next(e);
+        }
     });
     app.get("/v1/:network/tx/:txid", async (req, res, next) => {
         res.set("Content-type", "application/octet-stream");

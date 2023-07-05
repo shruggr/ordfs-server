@@ -4,15 +4,17 @@ import { NotFound } from "http-errors";
 import {
   File,
   OrdFS,
+  getBlockByHash,
+  getBlockByHeight,
   getLatestBlock,
   getRawTx,
   loadInscription,
   loadPointerFromDNS,
 } from "./lib";
 
-function sendFile(file: File, res: Response, immutable=true) {
+function sendFile(file: File, res: Response, immutable = true) {
   res.header("Content-Type", file.type || "");
-  if(immutable) {
+  if (immutable) {
     res.header("Cache-Control", "public,immutable,max-age=31536000");
   }
   res.status(200).send(file.data);
@@ -42,7 +44,27 @@ export function RegisterRoutes(app: express.Express) {
   });
 
   app.get("/v1/:network/block/latest", async (req, res, next) => {
-    res.json(await getLatestBlock(req.params.network));
+    try {
+      res.json(await getLatestBlock(req.params.network));
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  app.get("/v1/:network/block/height/:height", async (req, res, next) => {
+    try {
+      res.json(await getBlockByHeight(req.params.network, parseInt(req.params.height, 10)));
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  app.get("/v1/:network/block/hash/:hash", async (req, res, next) => {
+    try {
+      res.json(await getBlockByHash(req.params.network, req.params.hash));
+    } catch (e) {
+      next(e);
+    }
   });
 
   app.get("/v1/:network/tx/:txid", async (req, res, next) => {

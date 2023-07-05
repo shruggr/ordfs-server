@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseScript = exports.loadInscription = exports.loadPointerFromDNS = exports.getRawTx = exports.getLatestBlock = void 0;
+exports.parseScript = exports.loadInscription = exports.loadPointerFromDNS = exports.getRawTx = exports.getBlockByHash = exports.getBlockByHeight = exports.getLatestBlock = void 0;
 const core_1 = require("@ts-bitcoin/core");
 const bitcore_lib_1 = require("bitcore-lib");
 const dns = require("dns/promises");
@@ -27,6 +27,28 @@ async function getLatestBlock(network) {
     }
 }
 exports.getLatestBlock = getLatestBlock;
+async function getBlockByHeight(network, height) {
+    switch (network) {
+        case "btc":
+            return btcProvider.getBlockByHeight(height);
+        case "bsv":
+            return bsvProvider.getBlockByHeight(height);
+        default:
+            throw new http_errors_1.NotFound("Network Not Found");
+    }
+}
+exports.getBlockByHeight = getBlockByHeight;
+async function getBlockByHash(network, hash) {
+    switch (network) {
+        case "btc":
+            return btcProvider.getBlockByHash(hash);
+        case "bsv":
+            return bsvProvider.getBlockByHash(hash);
+        default:
+            throw new http_errors_1.NotFound("Network Not Found");
+    }
+}
+exports.getBlockByHash = getBlockByHash;
 async function getRawTx(network, txid) {
     switch (network) {
         case "btc":
