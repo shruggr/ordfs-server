@@ -20,6 +20,7 @@
   "dependencies": {
     "@gorillapool/js-junglebus": "^0.4.1",
     "@ts-bitcoin/core": "^2.2.0",
+    "axios": "^1.4.0",
     "bitcoin-core": "^4.1.0",
     "bitcore-lib": "^10.0.5",
     "cors": "^2.8.5",
