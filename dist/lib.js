@@ -6,8 +6,8 @@ const bitcore_lib_1 = require("bitcore-lib");
 const dns = require("dns/promises");
 const http_errors_1 = require("http-errors");
 const provider_1 = require("./provider");
-const B = Buffer.from('19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut');
-const ORD = Buffer.from('ord');
+const B = Buffer.from("19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut");
+const ORD = Buffer.from("ord");
 let btcProvider = new provider_1.BtcProvider();
 let bsvProvider = new provider_1.JungleBusProvider();
 if (process.env.BITCOIN_HOST) {
@@ -42,8 +42,8 @@ async function loadPointerFromDNS(hostname) {
     const lookupDomain = `_ordfs.${hostname}`;
     const TXTs = await dns.resolveTxt(lookupDomain);
     const prefix = "ordfs=";
-    let pointer = '';
-    console.log('Lookup Up:', lookupDomain);
+    let pointer = "";
+    console.log("Lookup Up:", lookupDomain);
     outer: for (let TXT of TXTs) {
         for (let elem of TXT) {
             if (!elem.startsWith(prefix))
@@ -53,9 +53,9 @@ async function loadPointerFromDNS(hostname) {
             console.log("Origin:", pointer);
             break outer;
         }
-    }
-    if (!pointer) {
-        throw new http_errors_1.NotFound();
+        if (!pointer) {
+            throw new http_errors_1.NotFound();
+        }
     }
     return pointer;
 }
