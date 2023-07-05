@@ -51,27 +51,20 @@
   });
 
   const inscribeCode = () => {
-    // 1. Instantiate editor
     let editor = ace.edit("editor");
-
-    // 2. Store text that will be copied to clipboard
-    let code = editor.getCopyText();
+    let code = editor.getValue();
 
     const b64Code = btoa(code);
     window.open(`https://1satordinals.com/inscribe?tab=html&code=${b64Code}`);
   };
 
   const copyCode = () => {
-    // 1. Instantiate editor
     let editor = ace.edit("editor");
-
-    // 2. Store text that will be copied to clipboard
-    let copyText = editor.getCopyText();
-
-    // 3. Verify if clipboard writing is allowed
+    let copyText = editor.getValue();
+    // Verify if clipboard writing is allowed
     isClipboardWritingAllowed()
       .then(function (allowed) {
-        // 4. Write to clipboard if allowed
+        // Write to clipboard if allowed
         if (allowed) {
           navigator.clipboard.writeText(copyText).then(function () {
             console.log(
