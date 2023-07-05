@@ -6,7 +6,8 @@
     <div class="flex text-white justify-between items-center px-4 my-1">
       <div class="flex flex-col">
         <div class="text-xl font-semibold font-mono text-purple-300">
-          ORDFS.NETWORK
+          <%= process.env.ORDFS_NAME == undefined ? 'ORDFS' :
+          process.env.ORDFS_NAME %>
         </div>
         <div class="text-sm font-mono text-emerald-200">
           Web Inscription Preview Tool
