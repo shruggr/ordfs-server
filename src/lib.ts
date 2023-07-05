@@ -48,7 +48,38 @@ export async function getLatestBlock(
   }
 }
 
-export async function getRawTx(network: string, txid: string): Promise<Buffer> {
+export async function getBlockByHeight(
+  network: string,
+  height: number
+): Promise<{ height: number; hash: string }> {
+  switch (network) {
+    case "btc":
+      return btcProvider.getBlockByHeight(height);
+    case "bsv":
+      return bsvProvider.getBlockByHeight(height);
+    default:
+      throw new NotFound("Network Not Found");
+  }
+}
+
+export async function getBlockByHash(
+  network: string,
+  hash: string
+): Promise<{ height: number; hash: string }> {
+  switch (network) {
+    case "btc":
+      return btcProvider.getBlockByHash(hash);
+    case "bsv":
+      return bsvProvider.getBlockByHash(hash);
+    default:
+      throw new NotFound("Network Not Found");
+  }
+}
+
+export async function getRawTx(
+  network: string,
+  txid: string
+): Promise<Buffer | undefined> {
   switch (network) {
     case "btc":
       return btcProvider.getRawTx(txid);
@@ -65,8 +96,8 @@ export async function loadPointerFromDNS(hostname: string): Promise<string> {
   const prefix = "ordfs=";
   let pointer = "";
   console.log("Lookup Up:", lookupDomain);
-  outer: for (let TXT of TXTs) {
-    for (let elem of TXT) {
+  outer: for (const TXT of TXTs) {
+    for (const elem of TXT) {
       if (!elem.startsWith(prefix)) continue;
       console.log("Elem:", elem);
       pointer = elem.slice(prefix.length);
@@ -88,6 +119,7 @@ export async function loadInscription(pointer: string): Promise<File> {
     const [txid, vout] = pointer.split("_");
     console.log("BSV:", txid, vout);
     const rawtx = await bsvProvider.getRawTx(txid);
+    if (!rawtx) throw new Error("Invalid Pointer");
     const tx = Tx.fromBuffer(rawtx);
     script = tx.txOuts[parseInt(vout, 10)].script;
   } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
@@ -121,7 +153,7 @@ export function parseScript(script: Script): File | undefined {
 
   let type = "application/octet-stream";
   let data = Buffer.alloc(0);
-  for (let [i, chunk] of script.chunks.entries()) {
+  for (const [i, chunk] of script.chunks.entries()) {
     if (chunk.buf?.equals(B) && script.chunks.length > i + 2) {
       data = script.chunks[i + 1].buf!;
       type = script.chunks[i + 2].buf!.toString();
@@ -153,6 +185,7 @@ export function parseScript(script: Script): File | undefined {
       case 1:
         // console.log(script.chunks[i].toString('hex'))
         if (script.chunks[i].buf![0] != 1) return;
+        break;
       case OpCode.OP_TRUE:
         type = script.chunks[i + 1]!.buf!.toString("utf8");
         // console.log("Type:", type)

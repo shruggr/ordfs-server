@@ -16,8 +16,12 @@ if (process.env.REDIS_HOST) {
 
 export interface ITxProvider {
   network: string;
-  getRawTx: (string) => Promise<Buffer>;
+  getRawTx: (txid: string) => Promise<Buffer | undefined>;
   getBlockchainInfo: () => Promise<{ height: number; hash: string }>;
+  getBlockByHeight: (
+    height: number
+  ) => Promise<{ height: number; hash: string }>;
+  getBlockByHash: (hash: string) => Promise<{ height: number; hash: string }>;
 }
 
 export class RpcProvider implements ITxProvider {
@@ -59,18 +63,38 @@ export class RpcProvider implements ITxProvider {
       hash: info.bestblockhash,
     };
   }
+
+  async getBlockByHeight(
+    height: number
+  ): Promise<{ height: number; hash: string }> {
+    const hash = await this.client.getBlockHash(height);
+    return { height, hash };
+  }
+
+  async getBlockByHash(
+    hash: string
+  ): Promise<{ height: number; hash: string }> {
+    const info = await this.client.getBlockHeader(hash);
+    return {
+      height: info.height,
+      hash,
+    };
+  }
 }
 
 export class JungleBusProvider implements ITxProvider {
   public network = "bsv";
 
-  async getRawTx(txid: string): Promise<Buffer> {
+  async getRawTx(txid: string): Promise<Buffer | undefined> {
     let rawtx = await redis?.getBuffer(`rawtx:${txid}`);
     if (!rawtx) {
       const jb = new JungleBusClient("https://junglebus.gorillapool.io");
       const txnData = await jb.GetTransaction(txid);
-      rawtx = Buffer.from(txnData!.transaction, "base64");
-      redis?.set(`rawtx:${txid}`, rawtx);
+      if (txnData && txnData.transaction) {
+        rawtx = Buffer.from(txnData!.transaction, "base64");
+        redis?.set(`rawtx:${txid}`, rawtx);
+      }
+      return;
     }
     return rawtx;
   }
@@ -86,6 +110,30 @@ export class JungleBusProvider implements ITxProvider {
     return {
       height: info[0].height,
       hash: info[0].hash,
+    };
+  }
+
+  async getBlockByHeight(
+    height: number
+  ): Promise<{ height: number; hash: string }> {
+    const resp = await fetch(
+      `https://api.whatsonchain.com/v1/bsv/main/block/height/${height}`
+    );
+    const info = await resp.json();
+    return { height, hash: info.hash };
+  }
+
+  async getBlockByHash(
+    hash: string
+  ): Promise<{ height: number; hash: string }> {
+    const resp = await fetch(
+      `https://api.whatsonchain.com/v1/bsv/main/block/hash/${hash}`
+    );
+    const info = await resp.json();
+
+    return {
+      height: info.height,
+      hash,
     };
   }
 }
@@ -117,6 +165,31 @@ export class BtcProvider implements ITxProvider {
     if (!resp.ok) {
       throw createError(resp.status, resp.statusText);
     }
+
     return resp.json();
+  }
+
+  async getBlockByHeight(
+    height: number
+  ): Promise<{ height: number; hash: string }> {
+    const resp = await fetch(
+      `https://ordinals.shruggr.cloud/v1/btc/block/height/${height}`
+    );
+    const info = await resp.json();
+    return { height, hash: info.hash };
+  }
+
+  async getBlockByHash(
+    hash: string
+  ): Promise<{ height: number; hash: string }> {
+    const resp = await fetch(
+      `https://ordinals.shruggr.cloud/v1/btc/block/hash/${hash}`
+    );
+    const info = await resp.json();
+
+    return {
+      height: info.height,
+      hash,
+    };
   }
 }

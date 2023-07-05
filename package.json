@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node dist/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .ts,.js",
+    "fix": "npm run lint -- --fix"
   },
   "author": "",
   "license": "ISC",
@@ -14,12 +16,16 @@
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
     "@types/http-errors": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "eslint": "^8.44.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   },
   "dependencies": {
     "@gorillapool/js-junglebus": "^0.4.1",
     "@ts-bitcoin/core": "^2.2.0",
+    "axios": "^1.4.0",
     "bitcoin-core": "^4.1.0",
     "bitcore-lib": "^10.0.5",
     "cors": "^2.8.5",
