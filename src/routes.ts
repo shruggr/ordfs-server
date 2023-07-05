@@ -1,18 +1,21 @@
+import axios from "axios";
 import * as express from "express";
 import { Response } from "express";
 import { NotFound } from "http-errors";
 import {
   File,
   OrdFS,
+  getBlockByHash,
+  getBlockByHeight,
   getLatestBlock,
   getRawTx,
   loadInscription,
   loadPointerFromDNS,
 } from "./lib";
 
-function sendFile(file: File, res: Response, immutable=true) {
+function sendFile(file: File, res: Response, immutable = true) {
   res.header("Content-Type", file.type || "");
-  if(immutable) {
+  if (immutable) {
     res.header("Cache-Control", "public,immutable,max-age=31536000");
   }
   res.status(200).send(file.data);
@@ -41,8 +44,61 @@ export function RegisterRoutes(app: express.Express) {
     }
   });
 
+  app.get('/rest/*', async (req, res, next) => {
+    try {
+      const resp = await axios.get(`http://${process.env.BITCOIN_HOST}:8332${req.originalUrl}`, {
+        responseType: 'stream'
+      });
+      resp.headers
+      for (let [k, v] of Object.entries(resp.headers)) {
+        res.set(k, v);
+      }
+      resp.data.pipe(res);
+    } catch (e: any) {
+      let status = 500
+      if (e.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(e.response.data);
+        console.log(e.response.status);
+        console.log(e.response.headers);
+        status = e.response.status;
+      } else if (e.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        console.log(e.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Error', e.message);
+      }
+      console.log(e.config);
+      next(new Error(`${status} ${e.message}`))
+    };
+  })
+
   app.get("/v1/:network/block/latest", async (req, res, next) => {
-    res.json(await getLatestBlock(req.params.network));
+    try {
+      res.json(await getLatestBlock(req.params.network));
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  app.get("/v1/:network/block/height/:height", async (req, res, next) => {
+    try {
+      res.json(await getBlockByHeight(req.params.network, parseInt(req.params.height, 10)));
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  app.get("/v1/:network/block/hash/:hash", async (req, res, next) => {
+    try {
+      res.json(await getBlockByHash(req.params.network, req.params.hash));
+    } catch (e) {
+      next(e);
+    }
   });
 
   app.get("/v1/:network/tx/:txid", async (req, res, next) => {

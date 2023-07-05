@@ -48,6 +48,34 @@ export async function getLatestBlock(
     }
 }
 
+export async function getBlockByHeight(
+    network: string,
+    height: number,
+): Promise<{ height: number; hash: string }> {
+    switch (network) {
+        case "btc":
+            return btcProvider.getBlockByHeight(height);
+        case "bsv":
+            return bsvProvider.getBlockByHeight(height);
+        default:
+            throw new NotFound("Network Not Found");
+    }
+}
+
+export async function getBlockByHash(
+    network: string,
+    hash: string,
+): Promise<{ height: number; hash: string }> {
+    switch (network) {
+        case "btc":
+            return btcProvider.getBlockByHash(hash);
+        case "bsv":
+            return bsvProvider.getBlockByHash(hash);
+        default:
+            throw new NotFound("Network Not Found");
+    }
+}
+
 export async function getRawTx(network: string, txid: string): Promise<Buffer> {
     switch (network) {
         case "btc":
