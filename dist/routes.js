@@ -3,9 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegisterRoutes = void 0;
 const http_errors_1 = require("http-errors");
 const lib_1 = require("./lib");
-function sendFile(file, res) {
+function sendFile(file, res, immutable = true) {
     res.header("Content-Type", file.type || "");
-    res.header("Cache-Control", "public,immutable,max-age=31536000");
+    if (immutable) {
+        res.header("Cache-Control", "public,immutable,max-age=31536000");
+    }
     res.status(200).send(file.data);
 }
 function RegisterRoutes(app) {
@@ -26,7 +28,7 @@ function RegisterRoutes(app) {
                 (_a = req.res) === null || _a === void 0 ? void 0 : _a.redirect("index.html");
                 return;
             }
-            sendFile(file, res);
+            sendFile(file, res, false);
         }
         catch (err) {
             // TODO: inscription not found
@@ -61,10 +63,11 @@ function RegisterRoutes(app) {
         try {
             let pointer;
             let file;
+            let immutable = true;
             try {
                 // check if its an ordfs directory
                 file = await (0, lib_1.loadInscription)(filename);
-                if (file.type === "ord-fs/json" && !req.params.raw) {
+                if (file.type === "ord-fs/json" && !req.query.raw) {
                     (_a = req.res) === null || _a === void 0 ? void 0 : _a.redirect(`/${filename}/index.html`);
                     return;
                 }
@@ -79,8 +82,9 @@ function RegisterRoutes(app) {
                 }
                 pointer = dir[filename].slice(6);
                 file = await (0, lib_1.loadInscription)(pointer);
+                immutable = false;
             }
-            sendFile(file, res);
+            sendFile(file, res, immutable);
         }
         catch (err) {
             next(err);
@@ -102,7 +106,7 @@ function RegisterRoutes(app) {
                 pointer = dir[filename];
             }
             const file = await (0, lib_1.loadInscription)(pointer);
-            sendFile(file, res);
+            sendFile(file, res, true);
         }
         catch (err) {
             next(err);

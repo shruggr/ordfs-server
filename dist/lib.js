@@ -6,6 +6,8 @@ const bitcore_lib_1 = require("bitcore-lib");
 const dns = require("dns/promises");
 const http_errors_1 = require("http-errors");
 const provider_1 = require("./provider");
+const B = Buffer.from('19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut');
+const ORD = Buffer.from('ord');
 let btcProvider = new provider_1.BtcProvider();
 let bsvProvider = new provider_1.JungleBusProvider();
 if (process.env.BITCOIN_HOST) {
@@ -86,35 +88,37 @@ async function loadInscription(pointer) {
 }
 exports.loadInscription = loadInscription;
 function parseScript(script) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     let opFalse = 0;
     let opIf = 0;
     let opORD = 0;
-    const lock = new core_1.Script();
+    let type = "application/octet-stream";
+    let data = Buffer.alloc(0);
     for (let [i, chunk] of script.chunks.entries()) {
+        if (((_a = chunk.buf) === null || _a === void 0 ? void 0 : _a.equals(B)) && script.chunks.length > i + 2) {
+            data = script.chunks[i + 1].buf;
+            type = script.chunks[i + 2].buf.toString();
+            return { data, type };
+        }
         if (chunk.opCodeNum === core_1.OpCode.OP_FALSE) {
             opFalse = i;
         }
         if (chunk.opCodeNum === core_1.OpCode.OP_IF) {
             opIf = i;
         }
-        if ((_a = chunk.buf) === null || _a === void 0 ? void 0 : _a.equals(Buffer.from("ord", "utf8"))) {
-            if (opFalse === i - 2 && opIf === i - 1) {
-                opORD = i;
-                lock.chunks = script.chunks.slice(0, i - 2);
-                break;
-            }
+
+        if (((_b = chunk.buf) === null || _b === void 0 ? void 0 : _b.equals(ORD)) && opFalse === i - 2 && opIf === i - 1) {
+            opORD = i;
+            break;
+
         }
-        lock.chunks.push(chunk);
     }
-    let type = "application/octet-stream";
-    let data = Buffer.alloc(0);
+
     for (let i = opORD + 1; i < script.chunks.length; i++) {
-        // console.log(script.chunks[i])
         switch (script.chunks[i].opCodeNum) {
             case core_1.OpCode.OP_FALSE:
-                while (((_b = script.chunks[i + 1]) === null || _b === void 0 ? void 0 : _b.opCodeNum) >= 1 &&
-                    ((_c = script.chunks[i + 1]) === null || _c === void 0 ? void 0 : _c.opCodeNum) <= core_1.OpCode.OP_PUSHDATA4) {
+                while (((_c = script.chunks[i + 1]) === null || _c === void 0 ? void 0 : _c.opCodeNum) >= 1 &&
+                    ((_d = script.chunks[i + 1]) === null || _d === void 0 ? void 0 : _d.opCodeNum) <= core_1.OpCode.OP_PUSHDATA4) {
                     data = Buffer.concat([data, script.chunks[i + 1].buf]);
                     i++;
                 }

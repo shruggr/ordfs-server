@@ -10,9 +10,11 @@ import {
   loadPointerFromDNS,
 } from "./lib";
 
-function sendFile(file: File, res: Response) {
+function sendFile(file: File, res: Response, immutable=true) {
   res.header("Content-Type", file.type || "");
-  res.header("Cache-Control", "public,immutable,max-age=31536000");
+  if(immutable) {
+    res.header("Cache-Control", "public,immutable,max-age=31536000");
+  }
   res.status(200).send(file.data);
 }
 
@@ -32,7 +34,7 @@ export function RegisterRoutes(app: express.Express) {
         req.res?.redirect("index.html");
         return;
       }
-      sendFile(file, res);
+      sendFile(file, res, false);
     } catch (err) {
       // TODO: inscription not found
       res.render("pages/404");
@@ -68,10 +70,11 @@ export function RegisterRoutes(app: express.Express) {
     try {
       let pointer: string;
       let file: File;
+      let immutable = true;
       try {
         // check if its an ordfs directory
         file = await loadInscription(filename);
-        if (file.type === "ord-fs/json" && !req.params.raw) {
+        if (file.type === "ord-fs/json" && !req.query.raw) {
           req.res?.redirect(`/${filename}/index.html`);
           return;
         }
@@ -85,8 +88,9 @@ export function RegisterRoutes(app: express.Express) {
         }
         pointer = dir[filename].slice(6);
         file = await loadInscription(pointer);
+        immutable = false;
       }
-      sendFile(file, res);
+      sendFile(file, res, immutable);
     } catch (err) {
       next(err);
     }
@@ -107,7 +111,7 @@ export function RegisterRoutes(app: express.Express) {
         pointer = dir[filename];
       }
       const file = await loadInscription(pointer);
-      sendFile(file, res);
+      sendFile(file, res, true);
     } catch (err) {
       next(err);
     }
