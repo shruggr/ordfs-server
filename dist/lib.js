@@ -6,8 +6,8 @@ const bitcore_lib_1 = require("bitcore-lib");
 const dns = require("dns/promises");
 const http_errors_1 = require("http-errors");
 const provider_1 = require("./provider");
-const B = Buffer.from('19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut');
-const ORD = Buffer.from('ord');
+const B = Buffer.from("19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut");
+const ORD = Buffer.from("ord");
 let btcProvider = new provider_1.BtcProvider();
 let bsvProvider = new provider_1.JungleBusProvider();
 if (process.env.BITCOIN_HOST) {
@@ -53,9 +53,9 @@ async function loadPointerFromDNS(hostname) {
             console.log("Origin:", pointer);
             break outer;
         }
-    }
-    if (!pointer) {
-        throw new http_errors_1.NotFound();
+        if (!pointer) {
+            throw new http_errors_1.NotFound();
+        }
     }
     return pointer;
 }
@@ -106,14 +106,11 @@ function parseScript(script) {
         if (chunk.opCodeNum === core_1.OpCode.OP_IF) {
             opIf = i;
         }
-
         if (((_b = chunk.buf) === null || _b === void 0 ? void 0 : _b.equals(ORD)) && opFalse === i - 2 && opIf === i - 1) {
             opORD = i;
             break;
-
         }
     }
-
     for (let i = opORD + 1; i < script.chunks.length; i++) {
         switch (script.chunks[i].opCodeNum) {
             case core_1.OpCode.OP_FALSE:
