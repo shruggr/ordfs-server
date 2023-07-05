@@ -1,7 +1,7 @@
 import * as cors from "cors";
 import * as dotenv from "dotenv";
 import * as express from "express";
-import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
+import { ErrorRequestHandler, Request, Response } from "express";
 import { HttpError, NotFound } from "http-errors";
 import { RegisterRoutes } from "./routes";
 dotenv.config();
@@ -36,8 +36,7 @@ server.use((req, res, next) => {
 const errorMiddleware = ((
   err: TypeError | HttpError,
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ) => {
   console.error(req.path, (err as HttpError).status || 500, err.message);
   res.status((err as HttpError).status || 500).json({ message: err.message });

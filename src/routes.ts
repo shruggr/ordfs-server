@@ -21,7 +21,7 @@ function sendFile(file: File, res: Response, immutable = true) {
 }
 
 export function RegisterRoutes(app: express.Express) {
-  app.get("/", async (req, res, next) => {
+  app.get("/", async (req, res) => {
     let outpoint: string;
     try {
       outpoint = await loadPointerFromDNS(req.hostname);
@@ -31,7 +31,7 @@ export function RegisterRoutes(app: express.Express) {
       return;
     }
     try {
-      let file = await loadInscription(outpoint);
+      const file = await loadInscription(outpoint);
       if (file.type === "ord-fs/json" && !req.query["raw"]) {
         req.res?.redirect("index.html");
         return;
@@ -53,7 +53,12 @@ export function RegisterRoutes(app: express.Express) {
 
   app.get("/v1/:network/block/height/:height", async (req, res, next) => {
     try {
-      res.json(await getBlockByHeight(req.params.network, parseInt(req.params.height, 10)));
+      res.json(
+        await getBlockByHeight(
+          req.params.network,
+          parseInt(req.params.height, 10)
+        )
+      );
     } catch (e) {
       next(e);
     }
@@ -67,7 +72,7 @@ export function RegisterRoutes(app: express.Express) {
     }
   });
 
-  app.get("/v1/:network/tx/:txid", async (req, res, next) => {
+  app.get("/v1/:network/tx/:txid", async (req, res) => {
     res.set("Content-type", "application/octet-stream");
     res.send(await getRawTx(req.params.network, req.params.txid));
   });

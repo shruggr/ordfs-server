@@ -49,34 +49,37 @@ export async function getLatestBlock(
 }
 
 export async function getBlockByHeight(
-    network: string,
-    height: number,
+  network: string,
+  height: number
 ): Promise<{ height: number; hash: string }> {
-    switch (network) {
-        case "btc":
-            return btcProvider.getBlockByHeight(height);
-        case "bsv":
-            return bsvProvider.getBlockByHeight(height);
-        default:
-            throw new NotFound("Network Not Found");
-    }
+  switch (network) {
+    case "btc":
+      return btcProvider.getBlockByHeight(height);
+    case "bsv":
+      return bsvProvider.getBlockByHeight(height);
+    default:
+      throw new NotFound("Network Not Found");
+  }
 }
 
 export async function getBlockByHash(
-    network: string,
-    hash: string,
+  network: string,
+  hash: string
 ): Promise<{ height: number; hash: string }> {
-    switch (network) {
-        case "btc":
-            return btcProvider.getBlockByHash(hash);
-        case "bsv":
-            return bsvProvider.getBlockByHash(hash);
-        default:
-            throw new NotFound("Network Not Found");
-    }
+  switch (network) {
+    case "btc":
+      return btcProvider.getBlockByHash(hash);
+    case "bsv":
+      return bsvProvider.getBlockByHash(hash);
+    default:
+      throw new NotFound("Network Not Found");
+  }
 }
 
-export async function getRawTx(network: string, txid: string): Promise<Buffer> {
+export async function getRawTx(
+  network: string,
+  txid: string
+): Promise<Buffer | undefined> {
   switch (network) {
     case "btc":
       return btcProvider.getRawTx(txid);
@@ -93,8 +96,8 @@ export async function loadPointerFromDNS(hostname: string): Promise<string> {
   const prefix = "ordfs=";
   let pointer = "";
   console.log("Lookup Up:", lookupDomain);
-  outer: for (let TXT of TXTs) {
-    for (let elem of TXT) {
+  outer: for (const TXT of TXTs) {
+    for (const elem of TXT) {
       if (!elem.startsWith(prefix)) continue;
       console.log("Elem:", elem);
       pointer = elem.slice(prefix.length);
@@ -116,12 +119,14 @@ export async function loadInscription(pointer: string): Promise<File> {
     const [txid, vout] = pointer.split("_");
     console.log("BSV:", txid, vout);
     const rawtx = await bsvProvider.getRawTx(txid);
+    if (!rawtx) throw new Error("No raw tx found");
     const tx = Tx.fromBuffer(rawtx);
     script = tx.txOuts[parseInt(vout, 10)].script;
   } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
     const [txid, vin] = pointer.split("i");
     console.log("BTC", txid, vin);
     const rawtx = await btcProvider.getRawTx(txid);
+    if (!rawtx) throw new Error("No raw tx found");
     const tx = new Transaction(rawtx);
     script = Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
   } else throw new Error("Invalid Pointer");
@@ -149,7 +154,7 @@ export function parseScript(script: Script): File | undefined {
 
   let type = "application/octet-stream";
   let data = Buffer.alloc(0);
-  for (let [i, chunk] of script.chunks.entries()) {
+  for (const [i, chunk] of script.chunks.entries()) {
     if (chunk.buf?.equals(B) && script.chunks.length > i + 2) {
       data = script.chunks[i + 1].buf!;
       type = script.chunks[i + 2].buf!.toString();
@@ -179,6 +184,7 @@ export function parseScript(script: Script): File | undefined {
         }
         break;
       case 1:
+        // treat 1 like OP_1 (BTC convention)
         // console.log(script.chunks[i].toString('hex'))
         if (script.chunks[i].buf![0] != 1) return;
       case OpCode.OP_TRUE:
