@@ -1,27 +1,99 @@
 <script type="application/javascript">
   const exampleHtml = `
-  <html>
+  <!DOCTYPE html>
+<html lang="en" style="height: 100%">
     <head>
-      <title>ORD-FS</title>
+      <title>ORD-FS DEMO</title>
     </head>
-    <body style="margin: 0; padding: 0;">
-      <div style="border-radius: 0.5rem;
+    <body style="margin: 0; padding: 0; height:100%">
+        <div style="border-radius: 0.5rem;
         background: linear-gradient(to right, black, #800080);
         width: 100%; text-align: center; height:100%; display: flex; justify-content: center; align-items: center;">
-        <img src="/content/971388081f6601b0e502adbfceef68d152e7f27ba5aff0230d2567aaa8acb768_0" style="width:100px; margin-right: 1rem;" alt="BSV Inscription" title="BSV Inscription" />
-        <iframe src="/content/7286fc9119a7630bad27f98459d81802ad2e100f78ba0ab993bbf0546ad9f730i0" sandbox=" " scrolling="no" style="border: none; overflow: height: 100%; width: 10rem; margin-left: 1rem;" alt="BTC Inscription" title="BTC Inscription" />
-      </div>
+
+            <!-- BSV INSCRIPTION REFERENCE -->
+            <img src="/content/971388081f6601b0e502adbfceef68d152e7f27ba5aff0230d2567aaa8acb768_0" style="width:100px; margin-right: 1rem;" alt="BSV Inscription" title="BSV Inscription" />
+
+            <!-- BTC INSCRIPTION REFERENCE -->
+            <iframe src="/content/7286fc9119a7630bad27f98459d81802ad2e100f78ba0ab993bbf0546ad9f730i0" sandbox=" " scrolling="no" style="border: none; overflow: height: 100%; width: 10rem; margin-left: 1rem;" alt="BTC Inscription" title="BTC Inscription"></iframe>
+        </div>
     </body>
-  </html>`;
+</html>`;
+
+  const closeTryItOut = () => {
+    document.querySelector("#tryItOut").classList.remove("block");
+    document.querySelector("#tryItOut").classList.add("hidden");
+  };
+
+  let htmlElement = null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    htmlElement = document.querySelector("#editor");
+    var editor = ace.edit(htmlElement);
+    editor.setTheme("ace/theme/monokai");
+    editor.session.setMode("ace/mode/html");
+    editor.setOptions({
+      fontSize: "11pt",
+      fontFamily: "Monaco, Menlo, Consolas",
+
+      showLineNumbers: true,
+      showGutter: true,
+      vScrollBarAlwaysVisible: true,
+      enableBasicAutocompletion: true,
+      enableLiveAutocompletion: true,
+    });
+    editor.setValue(exampleHtml.trim());
+    editor.clearSelection();
+    editor.session.on("change", function (delta) {
+      // delta.start, delta.end, delta.lines, delta.action
+      console.log(editor.getValue());
+      preview(editor.getValue() || exampleHtml.trim());
+    });
+  });
+
+  const inscribeCode = () => {
+    // 1. Instantiate editor
+    let editor = ace.edit("editor");
+
+    // 2. Store text that will be copied to clipboard
+    let code = editor.getCopyText();
+
+    const b64Code = btoa(code);
+    window.open(`https://1satordinals.com/inscribe?tab=html&code=${b64Code}`);
+  };
+
+  const copyCode = () => {
+    // 1. Instantiate editor
+    let editor = ace.edit("editor");
+
+    // 2. Store text that will be copied to clipboard
+    let copyText = editor.getCopyText();
+
+    // 3. Verify if clipboard writing is allowed
+    isClipboardWritingAllowed()
+      .then(function (allowed) {
+        // 4. Write to clipboard if allowed
+        if (allowed) {
+          navigator.clipboard.writeText(copyText).then(function () {
+            console.log(
+              "The text has been succesfully copied to the clipboard!"
+            );
+            document.getElementById("copy-label").innerHTML = "Copied!";
+          });
+        }
+      })
+      .catch(function (err) {
+        console.log("Cannot copy to clipboard", err);
+      });
+  };
 
   const tryItOut = () => {
-    let html = document.querySelector("#html").value;
+    let html = htmlElement.value;
     document.querySelector("#tryItOut").classList.remove("hidden");
     document.querySelector("#tryItOut").classList.add("block");
 
     if (!html || html.length === 0) {
       html = exampleHtml.trim();
-      document.querySelector("#html").value = html;
+      document.querySelector("#editor").value = html;
     }
     console.log({ html });
     try {
@@ -32,6 +104,30 @@
       console.error("Error displaying HTML code");
     }
   };
+
+  // Determine whether is possible to write an image/text to the clipboard.
+  function isClipboardWritingAllowed() {
+    return new Promise(function (resolve, reject) {
+      try {
+        navigator.permissions
+          .query({ name: "clipboard-write" })
+          .then(function (status) {
+            // PermissionStatus object
+            // {
+            //  onchange: null,
+            //  state: "granted" (it could be as well `denied` or `prompt`)
+            // }
+            console.log(status);
+
+            resolve(status.state == "granted");
+          });
+      } catch (error) {
+        // This could be caused because of a Browser incompatibility or security error
+        // Remember that this feature works only through HTTPS
+        reject(error);
+      }
+    });
+  }
 </script>
 <div
   class="p-2 text-white rounded w-full max-w-6xl mx-auto flex flex-col items-center justify-center"
@@ -84,17 +180,5 @@
     >
       <h1>Live Demo</h1>
     </button>
-  </div>
-
-  <div id="tryItOut" class="w-full hidden max-w-7xl mx-auto">
-    <div class="flex flex-col justify-between md:flex-row">
-      <textarea
-        id="html"
-        class="bg-[#111] text-purple-400 text-xs rounded p-2 md:w-1/2 h-96 placeholder-gray-400 mr-2"
-        placeholder="<html></html>"
-        oninput="javascript:preview(this.value)"
-      ></textarea>
-      <iframe id="preview" class="md:w-1/2 h-96 ml-2"></iframe>
-    </div>
   </div>
 </div>
