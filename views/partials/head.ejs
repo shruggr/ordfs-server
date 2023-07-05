@@ -1,7 +1,10 @@
 <meta charset="UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ord-FS Server</title>
+<title>
+  <%= process.env.ORDFS_NAME == undefined ? 'ORD-FS Server' :
+  process.env.ORDFS_NAME %>
+</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link
   rel="icon"
@@ -17,7 +20,11 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content="@1satordinals" />
-<meta name="twitter:title" content="ORD-FS" />
+<meta
+  name="twitter:title"
+  content="<%= process.env.ORDFS_NAME == undefined ? 'ORD-FS' :
+process.env.ORDFS_NAME %>"
+/>
 <meta name="twitter:description" content="Bitcoin > Internet" />
 <meta
   name="twitter:image"
