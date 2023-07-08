@@ -112,35 +112,62 @@ export async function loadPointerFromDNS(hostname: string): Promise<string> {
   return pointer;
 }
 
-export async function loadInscription(pointer: string): Promise<File> {
+export async function loadInscription(pointer: string, metadata = false): Promise<File> {
   console.log("loadInscription", pointer);
-  let script: Script | undefined;
+  let file: File | undefined;
   if (pointer.match(/^[0-9a-fA-F]{64}_\d*$/)) {
     const [txid, vout] = pointer.split("_");
     console.log("BSV:", txid, vout);
     const rawtx = await bsvProvider.getRawTx(txid);
     if (!rawtx) throw new Error("No raw tx found");
     const tx = Tx.fromBuffer(rawtx);
-    script = tx.txOuts[parseInt(vout, 10)].script;
+    const v = parseInt(vout, 10);
+    const script = tx.txOuts[v].script;
+    if (!script) throw new NotFound();
+    file = parseScript(script);
+    if (file && metadata) {
+      try {
+        const url =`https://ordinals.gorillapool.io/api/inscriptions/outpoint/${pointer}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        const { hash } = await bsvProvider.getBlockByHeight(data!.height);
+        const meta: Meta = {
+          height: data.height,
+          MAP: data.MAP,
+          hash,
+          txid,
+          v,
+        };
+        file.meta = meta;
+      } catch {};
+    }
   } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
     const [txid, vin] = pointer.split("i");
     console.log("BTC", txid, vin);
     const rawtx = await btcProvider.getRawTx(txid);
     if (!rawtx) throw new Error("No raw tx found");
     const tx = new Transaction(rawtx);
-    script = Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
+    const script = Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
+    if (!script) throw new NotFound();
+    file = parseScript(script);
   } else throw new Error("Invalid Pointer");
 
-  if (!script) throw new NotFound();
-
-  const file = parseScript(script);
   if (!file) throw new NotFound();
   return file;
+}
+
+export interface Meta {
+  height?: number;
+  hash?: string;
+  txid: string;
+  v: number;
+  MAP?: {[key:string]:any}
 }
 
 export interface File {
   type: string;
   data: Buffer;
+  meta?: Meta;
 }
 
 export interface OrdFS {

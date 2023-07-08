@@ -14,7 +14,10 @@ import {
 
 function sendFile(file: File, res: Response, immutable = true) {
   res.header("Content-Type", file.type || "");
-  if (immutable) {
+  if (file.meta) {
+    res.header('ordfs-meta', JSON.stringify(file.meta))
+  }
+  if (immutable && !file.meta) {
     res.header("Cache-Control", "public,immutable,max-age=31536000");
   }
   res.status(200).send(file.data);
@@ -100,13 +103,13 @@ export function RegisterRoutes(app: express.Express) {
       let immutable = true;
       try {
         // check if its an ordfs directory
-        file = await loadInscription(filename);
+        file = await loadInscription(filename, req.query.meta);
         if (file.type === "ord-fs/json" && !req.query.raw) {
           req.res?.redirect(`/${filename}/index.html`);
           return;
         }
       } catch (e: any) {
-        console.error("Outpoint Error", filename, e);
+        console.error("Outpoint Error", filename, e.message);
         pointer = await loadPointerFromDNS(req.hostname);
         const dirData = await loadInscription(pointer);
         const dir = JSON.parse(dirData.data!.toString("utf8"));
@@ -114,7 +117,7 @@ export function RegisterRoutes(app: express.Express) {
           throw new NotFound();
         }
         pointer = dir[filename].slice(6);
-        file = await loadInscription(pointer);
+        file = await loadInscription(pointer, req.query.meta);
         immutable = false;
       }
       sendFile(file, res, immutable);
@@ -126,7 +129,7 @@ export function RegisterRoutes(app: express.Express) {
   async function getInscription(req, res, next) {
     const pointer = req.params.pointer;
     try {
-      const file = await loadInscription(pointer);
+      const file = await loadInscription(pointer, req.query.meta);
       // check if its an ordfs directory
       if (file.type === "ord-fs/json" && !req.query.raw) {
         req.res?.redirect(`/${pointer}/index.html`);
@@ -152,7 +155,7 @@ export function RegisterRoutes(app: express.Express) {
       } else {
         pointer = dir[filename];
       }
-      const file = await loadInscription(pointer);
+      const file = await loadInscription(pointer, req.query.meta);
       sendFile(file, res, true);
     } catch (err) {
       next(err);
