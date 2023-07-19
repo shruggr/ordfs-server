@@ -2,6 +2,7 @@ import { OpCode, Script, Tx } from "@ts-bitcoin/core";
 import { Transaction } from "bitcore-lib";
 import * as dns from "dns/promises";
 import { NotFound } from "http-errors";
+import fetch from "cross-fetch";
 import {
   BtcProvider,
   ITxProvider,

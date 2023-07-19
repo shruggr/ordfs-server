@@ -1,5 +1,4 @@
 /// <reference types="node" />
-import "cross-fetch/polyfill";
 export interface ITxProvider {
     network: string;
     getRawTx: (string: any) => Promise<Buffer>;

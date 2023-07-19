@@ -1,6 +1,6 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import * as Client from "bitcoin-core";
-import "cross-fetch/polyfill";
+import fetch from "cross-fetch";
 import createError, { NotFound } from "http-errors";
 import { Redis } from "ioredis";
 
