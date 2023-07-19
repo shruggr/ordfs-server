@@ -1,47 +1,47 @@
 import { OpCode, Script, Tx } from "@ts-bitcoin/core";
-import { Transaction } from "bitcore-lib";
+// import { Transaction } from "bitcore-lib";
 import * as dns from "dns/promises";
 import createError from "http-errors";
 import fetch from "cross-fetch";
 import {
-  BtcProvider,
+  // BtcProvider,
   ITxProvider,
   JungleBusProvider,
-  RpcProvider,
+  // RpcProvider,
 } from "./provider";
 
 const B = Buffer.from("19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut");
 const ORD = Buffer.from("ord");
 
-let btcProvider: ITxProvider = new BtcProvider();
+// let btcProvider: ITxProvider = new BtcProvider();
 let bsvProvider: ITxProvider = new JungleBusProvider();
 
-if (process.env.BITCOIN_HOST) {
-  bsvProvider = new RpcProvider(
-    "bsv",
-    process.env.BITCOIN_HOST || "",
-    process.env.BITCOIN_PORT || "8332",
-    process.env.BITCOIN_USER || "",
-    process.env.BITCOIN_PASS || ""
-  );
-}
+// if (process.env.BITCOIN_HOST) {
+//   bsvProvider = new RpcProvider(
+//     "bsv",
+//     process.env.BITCOIN_HOST || "",
+//     process.env.BITCOIN_PORT || "8332",
+//     process.env.BITCOIN_USER || "",
+//     process.env.BITCOIN_PASS || ""
+//   );
+// }
 
-if (process.env.BTC_HOST) {
-  btcProvider = new RpcProvider(
-    "btc",
-    process.env.BTC_HOST || "",
-    process.env.BTC_PORT || "8332",
-    process.env.BTC_USER || "",
-    process.env.BTC_PASS || ""
-  );
-}
+// if (process.env.BTC_HOST) {
+//   btcProvider = new RpcProvider(
+//     "btc",
+//     process.env.BTC_HOST || "",
+//     process.env.BTC_PORT || "8332",
+//     process.env.BTC_USER || "",
+//     process.env.BTC_PASS || ""
+//   );
+// }
 
 export async function getLatestBlock(
   network: string
 ): Promise<{ height: number; hash: string }> {
   switch (network) {
-    case "btc":
-      return btcProvider.getBlockchainInfo();
+    // case "btc":
+    //   return btcProvider.getBlockchainInfo();
     case "bsv":
       return bsvProvider.getBlockchainInfo();
     default:
@@ -54,8 +54,8 @@ export async function getBlockByHeight(
   height: number
 ): Promise<{ height: number; hash: string }> {
   switch (network) {
-    case "btc":
-      return btcProvider.getBlockByHeight(height);
+    // case "btc":
+    //   return btcProvider.getBlockByHeight(height);
     case "bsv":
       return bsvProvider.getBlockByHeight(height);
     default:
@@ -68,8 +68,8 @@ export async function getBlockByHash(
   hash: string
 ): Promise<{ height: number; hash: string }> {
   switch (network) {
-    case "btc":
-      return btcProvider.getBlockByHash(hash);
+    // case "btc":
+    //   return btcProvider.getBlockByHash(hash);
     case "bsv":
       return bsvProvider.getBlockByHash(hash);
     default:
@@ -82,8 +82,8 @@ export async function getRawTx(
   txid: string
 ): Promise<Buffer | undefined> {
   switch (network) {
-    case "btc":
-      return btcProvider.getRawTx(txid);
+    // case "btc":
+    //   return btcProvider.getRawTx(txid);
     case "bsv":
       return bsvProvider.getRawTx(txid);
     default:
@@ -142,15 +142,15 @@ export async function loadInscription(pointer: string, metadata = false): Promis
         file.meta = meta;
       } catch {};
     }
-  } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
-    const [txid, vin] = pointer.split("i");
-    console.log("BTC", txid, vin);
-    const rawtx = await btcProvider.getRawTx(txid);
-    if (!rawtx) throw new Error("No raw tx found");
-    const tx = new Transaction(rawtx);
-    const script = Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
-    if (!script) throw new createError.NotFound();
-    file = parseScript(script);
+  // } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/) && btcProvider) {
+  //   const [txid, vin] = pointer.split("i");
+  //   console.log("BTC", txid, vin);
+  //   const rawtx = await btcProvider.getRawTx(txid);
+  //   if (!rawtx) throw new Error("No raw tx found");
+  //   const tx = new Transaction(rawtx);
+  //   const script = Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
+  //   if (!script) throw new createError.NotFound();
+  //   file = parseScript(script);
   } else throw new Error("Invalid Pointer");
 
   if (!file) throw new createError.NotFound();

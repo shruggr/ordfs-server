@@ -1,5 +1,5 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
-import * as Client from "bitcoin-core";
+// import * as Client from "bitcoin-core";
 import fetch from "cross-fetch";
 import createError from "http-errors";
 import { Redis } from "ioredis";
@@ -22,63 +22,63 @@ export interface ITxProvider {
   getBlockByHash: (string) => Promise<{ height: number; hash: string }>;
 }
 
-export class RpcProvider implements ITxProvider {
-  private client: Client;
+// export class RpcProvider implements ITxProvider {
+//   private client: Client;
 
-  constructor(
-    public network: string,
-    host: string,
-    port: string,
-    username: string,
-    password: string
-  ) {
-    this.client = new Client({
-      host,
-      port,
-      username,
-      password,
-    });
-  }
+//   constructor(
+//     public network: string,
+//     host: string,
+//     port: string,
+//     username: string,
+//     password: string
+//   ) {
+//     this.client = new Client({
+//       host,
+//       port,
+//       username,
+//       password,
+//     });
+//   }
 
-  async getRawTx(txid: string): Promise<Buffer> {
-    let rawtx = await redis?.getBuffer(`rawtx:${txid}`);
-    if (!rawtx) {
-      rawtx = await this.client.getTransactionByHash(txid, {
-        extension: "bin",
-      });
-      if (!rawtx) {
-        throw new createError.NotFound();
-      }
-      redis?.set(`rawtx:${txid}`, rawtx);
-    }
-    return rawtx;
-  }
+//   async getRawTx(txid: string): Promise<Buffer> {
+//     let rawtx = await redis?.getBuffer(`rawtx:${txid}`);
+//     if (!rawtx) {
+//       rawtx = await this.client.getTransactionByHash(txid, {
+//         extension: "bin",
+//       });
+//       if (!rawtx) {
+//         throw new createError.NotFound();
+//       }
+//       redis?.set(`rawtx:${txid}`, rawtx);
+//     }
+//     return rawtx;
+//   }
 
-  async getBlockchainInfo(): Promise<{ height: number; hash: string }> {
-    const info = await this.client.getBlockchainInfo();
-    return {
-      height: info.blocks,
-      hash: info.bestblockhash,
-    };
-  }
+//   async getBlockchainInfo(): Promise<{ height: number; hash: string }> {
+//     const info = await this.client.getBlockchainInfo();
+//     return {
+//       height: info.blocks,
+//       hash: info.bestblockhash,
+//     };
+//   }
 
-  async getBlockByHeight(
-    height: number
-  ): Promise<{ height: number; hash: string }> {
-    const hash = await this.client.getBlockHash(height);
-    return { height, hash };
-  }
+//   async getBlockByHeight(
+//     height: number
+//   ): Promise<{ height: number; hash: string }> {
+//     const hash = await this.client.getBlockHash(height);
+//     return { height, hash };
+//   }
 
-  async getBlockByHash(
-    hash: string
-  ): Promise<{ height: number; hash: string }> {
-    const info = await this.client.getBlockHeader(hash);
-    return {
-      height: info.height,
-      hash,
-    };
-  }
-}
+//   async getBlockByHash(
+//     hash: string
+//   ): Promise<{ height: number; hash: string }> {
+//     const info = await this.client.getBlockHeader(hash);
+//     return {
+//       height: info.height,
+//       hash,
+//     };
+//   }
+// }
 
 export class JungleBusProvider implements ITxProvider {
   public network = "bsv";
@@ -133,58 +133,58 @@ export class JungleBusProvider implements ITxProvider {
   }
 }
 
-export class BtcProvider implements ITxProvider {
-  public network = "btc";
+// export class BtcProvider implements ITxProvider {
+//   public network = "btc";
 
-  async getRawTx(txid: string): Promise<Buffer> {
-    let rawtx = await redis?.getBuffer(`rawtx:${txid}`);
-    if (!rawtx) {
-      // TODO: Make this configuration based
-      const resp = await fetch(
-        `https://ordinals.shruggr.cloud/v1/btc/tx/${txid}`
-      );
-      if (!resp.ok) {
-        throw createError(resp.status, resp.statusText);
-      }
-      rawtx = Buffer.from(await resp.arrayBuffer());
-      redis?.set(`rawtx:${txid}`, rawtx);
-    }
-    return rawtx;
-  }
+//   async getRawTx(txid: string): Promise<Buffer> {
+//     let rawtx = await redis?.getBuffer(`rawtx:${txid}`);
+//     if (!rawtx) {
+//       // TODO: Make this configuration based
+//       const resp = await fetch(
+//         `https://ordinals.shruggr.cloud/v1/btc/tx/${txid}`
+//       );
+//       if (!resp.ok) {
+//         throw createError(resp.status, resp.statusText);
+//       }
+//       rawtx = Buffer.from(await resp.arrayBuffer());
+//       redis?.set(`rawtx:${txid}`, rawtx);
+//     }
+//     return rawtx;
+//   }
 
-  async getBlockchainInfo(): Promise<{ height: number; hash: string }> {
-    // TODO: Make this configuration based
-    const resp = await fetch(
-      "https://ordinals.shruggr.cloud/v1/btc/block/latest"
-    );
-    if (!resp.ok) {
-      throw createError(resp.status, resp.statusText);
-    }
+//   async getBlockchainInfo(): Promise<{ height: number; hash: string }> {
+//     // TODO: Make this configuration based
+//     const resp = await fetch(
+//       "https://ordinals.shruggr.cloud/v1/btc/block/latest"
+//     );
+//     if (!resp.ok) {
+//       throw createError(resp.status, resp.statusText);
+//     }
 
-    return resp.json();
-  }
+//     return resp.json();
+//   }
 
-  async getBlockByHeight(
-    height: number
-  ): Promise<{ height: number; hash: string }> {
-    const resp = await fetch(
-      `https://ordinals.shruggr.cloud/v1/btc/block/height/${height}`
-    );
-    const info = await resp.json();
-    return { height, hash: info.hash };
-  }
+//   async getBlockByHeight(
+//     height: number
+//   ): Promise<{ height: number; hash: string }> {
+//     const resp = await fetch(
+//       `https://ordinals.shruggr.cloud/v1/btc/block/height/${height}`
+//     );
+//     const info = await resp.json();
+//     return { height, hash: info.hash };
+//   }
 
-  async getBlockByHash(
-    hash: string
-  ): Promise<{ height: number; hash: string }> {
-    const resp = await fetch(
-      `https://ordinals.shruggr.cloud/v1/btc/block/hash/${hash}`
-    );
-    const info = await resp.json();
+//   async getBlockByHash(
+//     hash: string
+//   ): Promise<{ height: number; hash: string }> {
+//     const resp = await fetch(
+//       `https://ordinals.shruggr.cloud/v1/btc/block/hash/${hash}`
+//     );
+//     const info = await resp.json();
 
-    return {
-      height: info.height,
-      hash,
-    };
-  }
-}
+//     return {
+//       height: info.height,
+//       hash,
+//     };
+//   }
+// }

@@ -15,41 +15,7 @@ export interface ITxProvider {
         hash: string;
     }>;
 }
-export declare class RpcProvider implements ITxProvider {
-    network: string;
-    private client;
-    constructor(network: string, host: string, port: string, username: string, password: string);
-    getRawTx(txid: string): Promise<Buffer>;
-    getBlockchainInfo(): Promise<{
-        height: number;
-        hash: string;
-    }>;
-    getBlockByHeight(height: number): Promise<{
-        height: number;
-        hash: string;
-    }>;
-    getBlockByHash(hash: string): Promise<{
-        height: number;
-        hash: string;
-    }>;
-}
 export declare class JungleBusProvider implements ITxProvider {
-    network: string;
-    getRawTx(txid: string): Promise<Buffer>;
-    getBlockchainInfo(): Promise<{
-        height: number;
-        hash: string;
-    }>;
-    getBlockByHeight(height: number): Promise<{
-        height: number;
-        hash: string;
-    }>;
-    getBlockByHash(hash: string): Promise<{
-        height: number;
-        hash: string;
-    }>;
-}
-export declare class BtcProvider implements ITxProvider {
     network: string;
     getRawTx(txid: string): Promise<Buffer>;
     getBlockchainInfo(): Promise<{
