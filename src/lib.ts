@@ -1,7 +1,7 @@
 import { OpCode, Script, Tx } from "@ts-bitcoin/core";
 import { Transaction } from "bitcore-lib";
 import * as dns from "dns/promises";
-import { NotFound } from "http-errors";
+import createError from "http-errors";
 import fetch from "cross-fetch";
 import {
   BtcProvider,
@@ -45,7 +45,7 @@ export async function getLatestBlock(
     case "bsv":
       return bsvProvider.getBlockchainInfo();
     default:
-      throw new NotFound("Network Not Found");
+      throw new createError.NotFound("Network Not Found");
   }
 }
 
@@ -59,7 +59,7 @@ export async function getBlockByHeight(
     case "bsv":
       return bsvProvider.getBlockByHeight(height);
     default:
-      throw new NotFound("Network Not Found");
+      throw new createError.NotFound("Network Not Found");
   }
 }
 
@@ -73,7 +73,7 @@ export async function getBlockByHash(
     case "bsv":
       return bsvProvider.getBlockByHash(hash);
     default:
-      throw new NotFound("Network Not Found");
+      throw new createError.NotFound("Network Not Found");
   }
 }
 
@@ -87,7 +87,7 @@ export async function getRawTx(
     case "bsv":
       return bsvProvider.getRawTx(txid);
     default:
-      throw new NotFound("Network Not Found");
+      throw new createError.NotFound("Network Not Found");
   }
 }
 
@@ -107,7 +107,7 @@ export async function loadPointerFromDNS(hostname: string): Promise<string> {
     }
 
     if (!pointer) {
-      throw new NotFound();
+      throw new createError.NotFound();
     }
   }
   return pointer;
@@ -124,7 +124,7 @@ export async function loadInscription(pointer: string, metadata = false): Promis
     const tx = Tx.fromBuffer(rawtx);
     const v = parseInt(vout, 10);
     const script = tx.txOuts[v].script;
-    if (!script) throw new NotFound();
+    if (!script) throw new createError.NotFound();
     file = parseScript(script);
     if (file && metadata) {
       try {
@@ -149,11 +149,11 @@ export async function loadInscription(pointer: string, metadata = false): Promis
     if (!rawtx) throw new Error("No raw tx found");
     const tx = new Transaction(rawtx);
     const script = Script.fromBuffer(tx.inputs[parseInt(vin, 10)].witnesses[1]);
-    if (!script) throw new NotFound();
+    if (!script) throw new createError.NotFound();
     file = parseScript(script);
   } else throw new Error("Invalid Pointer");
 
-  if (!file) throw new NotFound();
+  if (!file) throw new createError.NotFound();
   return file;
 }
 

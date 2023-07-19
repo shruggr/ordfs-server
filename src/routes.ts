@@ -1,6 +1,6 @@
 import * as express from "express";
 import { Response } from "express";
-import { NotFound } from "http-errors";
+import createError from "http-errors";
 import {
   File,
   OrdFS,
@@ -114,7 +114,7 @@ export function RegisterRoutes(app: express.Express) {
         const dirData = await loadInscription(pointer);
         const dir = JSON.parse(dirData.data!.toString("utf8"));
         if (!dir[filename]) {
-          throw new NotFound();
+          throw new createError.NotFound();
         }
         pointer = dir[filename].slice(6);
         file = await loadInscription(pointer, req.query.meta);
@@ -148,7 +148,7 @@ export function RegisterRoutes(app: express.Express) {
       const dirData = await loadInscription(pointer);
       const dir: OrdFS = JSON.parse(dirData.data!.toString("utf8"));
       if (!dir[filename]) {
-        throw new NotFound();
+        throw new createError.NotFound();
       }
       if (dir[filename].startsWith("ord://")) {
         pointer = dir[filename].slice(6);
