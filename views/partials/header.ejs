@@ -31,9 +31,10 @@
     <div class="text-center">
       <h1
         id="ordfs-title"
-        class="text-6xl font-bold tracking-tight sm:text-9xl transition"
+        class="text-5xl font-bold tracking-tight sm:text-7xl transition"
       >
-        ORD-FS
+        <%= process.env.ORDFS_NAME == undefined ? 'ORD-FS' :
+        process.env.ORDFS_NAME %>
       </h1>
       <h2 id="ordfs-subtitle" class="mt-6 text-2xl leading-8">
         Bitcoin > Internet 😎
@@ -45,12 +46,14 @@
       ></p>
 
       <div class="mt-10 flex items-center justify-center gap-x-6">
-        <a
-          href="#demo"
-          class="rounded-md bg-opacity-50 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition"
+        <div
+          href="#"
+          onclick="tryItOut()"
+          class="rounded-md bg-opacity-50 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition cursor-pointer"
           id="primary-button"
-          >Try It Out</a
         >
+          Try It Out
+        </div>
         <a
           href="https://github.com/shruggr/ordfs-server"
           class="rounded-md bg-opacity-50 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition"

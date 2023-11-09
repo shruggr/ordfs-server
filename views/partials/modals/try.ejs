@@ -1,0 +1,79 @@
+<div
+  id="tryItOut"
+  class="fixed top-0 left-0 w-full hidden w-screen h-screen bg-[#111] flex items-center justify-center z-10"
+>
+  <div class="w-full flex flex-col h-full">
+    <div class="flex text-white justify-between items-center px-4 my-1">
+      <div class="flex flex-col">
+        <div class="text-xl font-semibold font-mono text-purple-300">
+          <%= process.env.ORDFS_NAME == undefined ? 'ORD-FS' :
+          process.env.ORDFS_NAME %>
+        </div>
+        <div class="text-sm font-mono text-emerald-200">
+          Web Inscription Preview Tool
+        </div>
+      </div>
+
+      <div
+        onclick="closeTryItOut()"
+        class="p-2 cursor-pointer hover:text-red-400 transition"
+      >
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 24 24"
+          class="w-10 h-10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12.0007 10.5865L16.9504 5.63672L18.3646 7.05093L13.4149 12.0007L18.3646 16.9504L16.9504 18.3646L12.0007 13.4149L7.05093 18.3646L5.63672 16.9504L10.5865 12.0007L5.63672 7.05093L7.05093 5.63672L12.0007 10.5865Z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+    <div
+      class="flex flex-col h-full justify-between md:flex-row w-full rounded-md"
+    >
+      <div
+        id="editor"
+        class="bg-[#111] text-purple-200 text-xs rounded p-2 md:w-1/2 h-full placeholder-gray-400 mr-2 font-mono"
+        placeholder="<html></html>"
+      ></div>
+      <iframe id="preview" class="md:w-1/2 ml-2 h-full bg-white"></iframe>
+    </div>
+    <div class="w-full text-center p-2">
+      <button
+        class="hover:bg-purple-800 transition font-semibold cursor-pointer bg-purple-600 text-white p-2 rounded-md hover:text-emerald-300"
+        onclick="copyCode()"
+      >
+        <div class="flex items-center mx-auto">
+          <svg
+            stroke="currentColor"
+            fill="currentColor"
+            stroke-width="0"
+            viewBox="0 0 24 24"
+            height="1em"
+            class="mr-2"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M14 8H4c-1.103 0-2 .897-2 2v10c0 1.103.897 2 2 2h10c1.103 0 2-.897 2-2V10c0-1.103-.897-2-2-2z"
+            ></path>
+            <path
+              d="M20 2H10a2 2 0 0 0-2 2v2h8a2 2 0 0 1 2 2v8h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"
+            ></path>
+          </svg>
+          <div id="copy-label">Copy Code</div>
+        </div>
+      </button>
+      <!-- <button
+        class="hover:bg-purple-800 transition my-8 font-semibold cursor-pointer text-2xl bg-purple-600 text-white p-2 rounded-md hover:text-emerald-300"
+        onclick="inscribeCode()"
+      >
+        Inscribe at 1SatOrdinals.com
+      </button> -->
+    </div>
+  </div>
+</div>
