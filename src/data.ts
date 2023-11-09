@@ -1,12 +1,32 @@
-import createError from "http-errors";
 import { Redis } from "ioredis";
 import { OpCode, Script, Tx } from "@ts-bitcoin/core";
 import { NotFound } from "http-errors";
-import fetch from "cross-fetch";
 import { Outpoint } from "./models/outpoint";
 import { File } from "./models/models";
+import { BtcProvider, ITxProvider, ProxyProvider, RpcProvider } from "./provider";
 
-const { BITCOIN_HOST, BITCOIN_PORT } = process.env;
+let btcProvider: ITxProvider = new BtcProvider();
+let bsvProvider: ITxProvider = new ProxyProvider();
+
+if (process.env.BITCOIN_HOST) {
+    bsvProvider = new RpcProvider(
+        "bsv",
+        process.env.BITCOIN_HOST || "",
+        process.env.BITCOIN_PORT || "8332",
+        process.env.BITCOIN_USER || "",
+        process.env.BITCOIN_PASS || ""
+    );
+}
+
+if (process.env.BTC_HOST) {
+    btcProvider = new RpcProvider(
+        "btc",
+        process.env.BTC_HOST || "",
+        process.env.BTC_PORT || "8332",
+        process.env.BTC_USER || "",
+        process.env.BTC_PASS || ""
+    );
+}
 
 const B = Buffer.from("19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut");
 const ORD = Buffer.from("ord");
@@ -23,22 +43,28 @@ if (process.env.REDIS_HOST) {
 
 export async function getRawTx(txid: string): Promise<Buffer> {
     let rawtx = await redis?.getBuffer(txid);
-    if (!rawtx && BITCOIN_HOST) {
-        const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
-        const resp = await fetch(url);
-        if (!resp.ok) {
-            throw createError(resp.status, resp.statusText)
-        }
-        rawtx = Buffer.from(await resp.arrayBuffer());
-        await redis.set(txid, rawtx)
+    if (!rawtx) {
+        try {
+            rawtx = await bsvProvider.getRawTx(txid);
+            await redis.set(txid, rawtx)
+        } catch {}
+        // const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
+        // const resp = await fetch(url);
+        // if (!resp.ok) {
+        //     throw createError(resp.status, resp.statusText)
+        // }
+        // rawtx = Buffer.from(await resp.arrayBuffer());
     }
     if (!rawtx) {
-        const resp = await fetch(`https://junglebus.gorillapool.io/v1/transaction/get/${txid}/bin`);
-        if (!resp.ok) {
-            throw createError(resp.status, resp.statusText);
-        }
-        rawtx = Buffer.from(await resp.arrayBuffer());
-        redis?.set(`rawtx:${txid}`, rawtx);
+        try {
+            rawtx = await btcProvider.getRawTx(txid);
+            await redis.set(txid, rawtx)
+        } catch {}
+        // const resp = await fetch(`https://junglebus.gorillapool.io/v1/transaction/get/${txid}/bin`);
+        // if (!resp.ok) {
+        //     throw createError(resp.status, resp.statusText);
+        // }
+        // rawtx = Buffer.from(await resp.arrayBuffer());
     }
     if (!rawtx) {
         throw new NotFound();
@@ -50,42 +76,40 @@ export async function loadTx(txid: string): Promise<Tx> {
     return Tx.fromBuffer(await getRawTx(txid));
 }
 
-export async function getBlockchainInfo(): Promise<{ height: number; hash: string }> {
-    const resp = await fetch(
-        "https://api.whatsonchain.com/v1/bsv/main/block/headers"
-    );
-    if (!resp.ok) {
-        throw createError(resp.status, resp.statusText);
+export async function getBlockchainInfo(network: string): Promise<{ height: number; hash: string }> {
+    switch (network) {
+        case "bsv":
+            return bsvProvider.getBlockchainInfo();
+        case "btc":
+            return btcProvider.getBlockchainInfo();
     }
-    const info = await resp.json();
-    return {
-        height: info[0].height,
-        hash: info[0].hash,
-    };
+    throw new Error("Invalid Network");
 }
 
 export async function getBlockByHeight(
+    network: string,
     height: number
 ): Promise<{ height: number; hash: string }> {
-    const resp = await fetch(
-        `https://api.whatsonchain.com/v1/bsv/main/block/height/${height}`
-    );
-    const info = await resp.json();
-    return { height, hash: info.hash };
+    switch (network) {
+        case "bsv":
+            return bsvProvider.getBlockByHeight(height);
+        case "btc":
+            return btcProvider.getBlockByHeight(height);
+    }
+    throw new Error("Invalid Network");
 }
 
 export async function getBlockByHash(
+    network: string,
     hash: string
 ): Promise<{ height: number; hash: string }> {
-    const resp = await fetch(
-        `https://api.whatsonchain.com/v1/bsv/main/block/hash/${hash}`
-    );
-    const info = await resp.json();
-
-    return {
-        height: info.height,
-        hash,
-    };
+    switch (network) {
+        case "bsv":
+            return bsvProvider.getBlockByHash(hash);
+        case "btc":
+            return btcProvider.getBlockByHash(hash);
+    }
+    throw new Error("Invalid Network");
 }
 
 export async function loadFileByOutpoint(outpoint: Outpoint): Promise<File> {

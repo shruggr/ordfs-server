@@ -20,7 +20,7 @@ function sendFile(file: File, res: Response, immutable = true) {
 export function RegisterRoutes(app: express.Express) {
   app.get("/", async (req, res) => {
     let outpoint: string;
-    if(ORDFS_DOMAINS && req.hostname != ORDFS_HOST) {
+    if (ORDFS_DOMAINS && req.hostname != ORDFS_HOST) {
       try {
         outpoint = await loadPointerFromDNS(req.hostname);
         const file = await loadInscription(outpoint);
@@ -34,11 +34,12 @@ export function RegisterRoutes(app: express.Express) {
         res.render("pages/404");
       }
     }
+    res.render("pages/index");
   });
 
   app.get("/v1/:network/block/latest", async (req, res, next) => {
     try {
-      res.json(await getBlockchainInfo());
+      res.json(await getBlockchainInfo(req.params.network));
     } catch (e) {
       next(e);
     }
@@ -48,6 +49,7 @@ export function RegisterRoutes(app: express.Express) {
     try {
       res.json(
         await getBlockByHeight(
+          req.params.network,
           parseInt(req.params.height, 10)
         )
       );
@@ -58,7 +60,7 @@ export function RegisterRoutes(app: express.Express) {
 
   app.get("/v1/:network/block/hash/:hash", async (req, res, next) => {
     try {
-      res.json(await getBlockByHash(req.params.hash));
+      res.json(await getBlockByHash(req.params.network, req.params.hash));
     } catch (e) {
       next(e);
     }
@@ -95,7 +97,7 @@ export function RegisterRoutes(app: express.Express) {
         if (!(err instanceof BadRequest)) {
           throw err;
         }
-        if(ORDFS_DOMAINS && req.hostname != ORDFS_HOST) {
+        if (ORDFS_DOMAINS && req.hostname != ORDFS_HOST) {
           const filename = pointer;
           pointer = await loadPointerFromDNS(req.hostname);
           const dirData = await loadInscription(pointer);
@@ -107,7 +109,7 @@ export function RegisterRoutes(app: express.Express) {
           file = await loadInscription(pointer, req.query.meta);
         }
       }
-      if(!file) {
+      if (!file) {
         throw new NotFound();
       }
       sendFile(file, res, immutable);

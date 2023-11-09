@@ -31,6 +31,8 @@ export async function loadInscription(pointer: string, metadata = false): Promis
 
   if (pointer.match(/^[0-9a-fA-F]{64}$/)) {
     file = await loadFileByTxid(pointer);
+  } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/)) {
+    
   } else if (pointer.match(/^[0-9a-fA-F]{64}_\d+$/)) {
     file = await loadFileByOutpoint(Outpoint.fromString(pointer))
     if (file && metadata) {
@@ -41,7 +43,7 @@ export async function loadInscription(pointer: string, metadata = false): Promis
           throw createError(resp.status, resp.statusText);
         }
         const data = await resp.json();
-        const { hash } = await getBlockByHeight(data!.height);
+        const { hash } = await getBlockByHeight('bsv', data!.height);
 
         file.meta = {
           ...data,
