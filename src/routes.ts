@@ -1,17 +1,11 @@
 import * as express from "express";
 import { Response } from "express";
-import createError from "http-errors";
-import {
-  File,
-  OrdFS,
-  getBlockByHash,
-  getBlockByHeight,
-  getLatestBlock,
-  getRawTx,
-  loadInscription,
-  loadPointerFromDNS,
-} from "./lib";
+import { BadRequest, NotFound } from "http-errors";
+import { File, OrdFS } from "./models/models";
+import { loadInscription, loadPointerFromDNS } from "./lib";
+import { getBlockByHash, getBlockByHeight, getBlockchainInfo, getRawTx } from "./data";
 
+const { ORDFS_DOMAINS, ORDFS_HOST } = process.env;
 function sendFile(file: File, res: Response, immutable = true) {
   res.header("Content-Type", file.type || "");
   if (file.meta) {
@@ -26,29 +20,25 @@ function sendFile(file: File, res: Response, immutable = true) {
 export function RegisterRoutes(app: express.Express) {
   app.get("/", async (req, res) => {
     let outpoint: string;
-    try {
-      outpoint = await loadPointerFromDNS(req.hostname);
-    } catch (e: any) {
-      // DNS pointer not found
-      res.render("pages/index");
-      return;
-    }
-    try {
-      const file = await loadInscription(outpoint);
-      if (file.type === "ord-fs/json" && !req.query["raw"]) {
-        req.res?.redirect("index.html");
-        return;
+    if(ORDFS_DOMAINS && req.hostname != ORDFS_HOST) {
+      try {
+        outpoint = await loadPointerFromDNS(req.hostname);
+        const file = await loadInscription(outpoint);
+        if (file.type === "ord-fs/json" && !req.query["raw"]) {
+          req.res?.redirect("index.html");
+          return;
+        }
+        sendFile(file, res, false);
+      } catch (err) {
+        // TODO: inscription not found
+        res.render("pages/404");
       }
-      sendFile(file, res, false);
-    } catch (err) {
-      // TODO: inscription not found
-      res.render("pages/404");
     }
   });
 
   app.get("/v1/:network/block/latest", async (req, res, next) => {
     try {
-      res.json(await getLatestBlock(req.params.network));
+      res.json(await getBlockchainInfo());
     } catch (e) {
       next(e);
     }
@@ -58,7 +48,6 @@ export function RegisterRoutes(app: express.Express) {
     try {
       res.json(
         await getBlockByHeight(
-          req.params.network,
           parseInt(req.params.height, 10)
         )
       );
@@ -69,7 +58,7 @@ export function RegisterRoutes(app: express.Express) {
 
   app.get("/v1/:network/block/hash/:hash", async (req, res, next) => {
     try {
-      res.json(await getBlockByHash(req.params.network, req.params.hash));
+      res.json(await getBlockByHash(req.params.hash));
     } catch (e) {
       next(e);
     }
@@ -77,9 +66,9 @@ export function RegisterRoutes(app: express.Express) {
 
   app.get("/v1/:network/tx/:txid", async (req, res) => {
     res.set("Content-type", "application/octet-stream");
-    res.send(await getRawTx(req.params.network, req.params.txid));
+    res.send(await getRawTx(req.params.txid));
   });
-  app.get("/:filename", getInscriptionOrDnsFile);
+  app.get("/:fileOrPointer", getInscriptionOrDnsFile);
   app.get("/content/:pointer", getInscription);
   app.get("/preview/:b64HtmlData", previewHtmlFromB64Data);
   app.get("/:pointer/:filename", getOrdfsFile);
@@ -96,29 +85,30 @@ export function RegisterRoutes(app: express.Express) {
   }
 
   async function getInscriptionOrDnsFile(req, res, next) {
-    const filename = req.params.filename;
+    let pointer = req.params.fileOrPointer!;
+    let file: File | undefined;
+    let immutable = true;
     try {
-      let pointer: string;
-      let file: File;
-      let immutable = true;
       try {
-        // check if its an ordfs directory
-        file = await loadInscription(filename, req.query.meta);
-        if (file.type === "ord-fs/json" && !req.query.raw) {
-          req.res?.redirect(`/${filename}/index.html`);
-          return;
-        }
-      } catch (e: any) {
-        console.error("Outpoint Error", filename, e.message);
-        pointer = await loadPointerFromDNS(req.hostname);
-        const dirData = await loadInscription(pointer);
-        const dir = JSON.parse(dirData.data!.toString("utf8"));
-        if (!dir[filename]) {
-          throw new createError.NotFound();
-        }
-        pointer = dir[filename].slice(6);
         file = await loadInscription(pointer, req.query.meta);
-        immutable = false;
+      } catch (err) {
+        if (!(err instanceof BadRequest)) {
+          throw err;
+        }
+        if(ORDFS_DOMAINS && req.hostname != ORDFS_HOST) {
+          const filename = pointer;
+          pointer = await loadPointerFromDNS(req.hostname);
+          const dirData = await loadInscription(pointer);
+          const dir = JSON.parse(dirData.data!.toString("utf8"));
+          if (!dir[filename]) {
+            throw new NotFound();
+          }
+          pointer = dir[filename].slice(6);
+          file = await loadInscription(pointer, req.query.meta);
+        }
+      }
+      if(!file) {
+        throw new NotFound();
       }
       sendFile(file, res, immutable);
     } catch (err) {
@@ -148,7 +138,7 @@ export function RegisterRoutes(app: express.Express) {
       const dirData = await loadInscription(pointer);
       const dir: OrdFS = JSON.parse(dirData.data!.toString("utf8"));
       if (!dir[filename]) {
-        throw new createError.NotFound();
+        throw new NotFound();
       }
       if (dir[filename].startsWith("ord://")) {
         pointer = dir[filename].slice(6);
