@@ -1,7 +1,10 @@
 <meta charset="UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ord-FS Server</title>
+<title>
+  <%= process.env.ORDFS_NAME == undefined ? 'ORD-FS Server' :
+  process.env.ORDFS_NAME %>
+</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link
   rel="icon"
@@ -17,12 +20,22 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content="@1satordinals" />
-<meta name="twitter:title" content="ORD-FS" />
+<meta
+  name="twitter:title"
+  content="<%= process.env.ORDFS_NAME == undefined ? 'ORD-FS' :
+process.env.ORDFS_NAME %>"
+/>
 <meta name="twitter:description" content="Bitcoin > Internet" />
 <meta
   name="twitter:image"
   content="https://ordfs.network/48727ca4228aae51909d4e745eaf32630280ba30330eac2701d7147898e16133_0"
 />
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.1/ace.min.js"
+  integrity="sha512-Jvb+MTAHCHRq5MfeTXL4V7bdkKG5ybsUbjyjHaNEKUFby4qEs8Id3mVcb2S5ft+v/SV00r+/hTOyzmJ0Rif0qQ=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
 
 <style>
   body {
@@ -31,5 +44,30 @@
   h1,
   h2 {
     font-family: "Rubik", sans-serif;
+  }
+  :root {
+    --primary: #111111;
+    --secondary: #333333;
+  }
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--secondary) var(--primary);
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 15px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--primary);
+    border-radius: 5px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--secondary);
+    border-radius: 14px;
+    border: 3px solid var(--primary);
   }
 </style>

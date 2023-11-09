@@ -45,6 +45,9 @@ To get block height and hash, make a GET request to `/v1/{network}/block/latest`
 ```
 
 ### Config
+#### General
+`ORDFS-NAME=` Name of your OrdFS instance. This will be displayed on the demo page.
+
 #### BTC Node
 Set the following ENVIRONMENT VARS to point to your BTC Node. REST server must be enabled.
 `BTC_HOST=`
