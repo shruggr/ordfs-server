@@ -1,3 +1,4 @@
+import { Transaction } from "bitcore-lib";
 import { Redis } from "ioredis";
 import { OpCode, Script, Tx } from "@ts-bitcoin/core";
 import { NotFound } from "http-errors";
@@ -105,21 +106,28 @@ export async function getBlockByHash(
 
 export async function loadFileByOutpoint(outpoint: Outpoint): Promise<File> {
     const tx = await loadTx(outpoint.txid.toString('hex'));
-    return parseOutputScript(tx.txOuts[outpoint.vout].script);
+    return parseScript(tx.txOuts[outpoint.vout].script);
+}
+
+export async function loadFileByInpoint(inpoint: string): Promise<File> {
+    const [txid, vout] = inpoint.split('i');
+    const rawtx = await getRawTx(txid);
+    const tx = new Transaction(rawtx);
+    return parseScript(tx.txIns[parseInt(vout, 10)].script);
 }
 
 export async function loadFileByTxid(txid: string): Promise<File> {
     const tx = await loadTx(txid);
     for (let txOut of tx.txOuts) {
         try {
-            const data = await parseOutputScript(txOut.script);
+            const data = await parseScript(txOut.script);
             if (data) return data;
         } catch { }
     }
     throw new NotFound();
 }
 
-export function parseOutputScript(script: Script): File {
+export function parseScript(script: Script): File {
     let opFalse = 0;
     let opIf = 0;
     for (let [i, chunk] of script.chunks.entries()) {

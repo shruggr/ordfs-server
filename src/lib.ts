@@ -4,7 +4,7 @@ import { BadRequest, NotFound } from "http-errors";
 import * as createError from "http-errors";
 
 import { File } from "./models/models";
-import { getBlockByHeight, loadFileByOutpoint, loadFileByTxid } from "./data";
+import { getBlockByHeight, loadFileByInpoint, loadFileByOutpoint, loadFileByTxid } from "./data";
 import { Outpoint } from "./models/outpoint";
 
 export async function loadPointerFromDNS(hostname: string): Promise<string> {
@@ -32,7 +32,7 @@ export async function loadInscription(pointer: string, metadata = false): Promis
   if (pointer.match(/^[0-9a-fA-F]{64}$/)) {
     file = await loadFileByTxid(pointer);
   } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/)) {
-    
+    file = await loadFileByInpoint(pointer)
   } else if (pointer.match(/^[0-9a-fA-F]{64}_\d+$/)) {
     file = await loadFileByOutpoint(Outpoint.fromString(pointer))
     if (file && metadata) {
