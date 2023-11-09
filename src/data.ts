@@ -6,8 +6,8 @@ import { Outpoint } from "./models/outpoint";
 import { File } from "./models/models";
 import { BtcProvider, ITxProvider, ProxyProvider, RpcProvider } from "./provider";
 
-let btcProvider: ITxProvider = new BtcProvider();
 let bsvProvider: ITxProvider = new ProxyProvider();
+let btcProvider: ITxProvider = new BtcProvider();
 
 if (process.env.BITCOIN_HOST) {
     bsvProvider = new RpcProvider(
@@ -45,7 +45,9 @@ if (process.env.REDIS_HOST) {
 export async function getRawTx(txid: string): Promise<Buffer> {
     let rawtx = await redis?.getBuffer(txid);
     if (!rawtx) {
-        rawtx = await bsvProvider.getRawTx(txid).catch();
+        try {
+            rawtx = await bsvProvider.getRawTx(txid);
+        } catch {}
         // const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
         // const resp = await fetch(url);
         // if (!resp.ok) {
@@ -55,7 +57,7 @@ export async function getRawTx(txid: string): Promise<Buffer> {
     }
     if (!rawtx) {
         try {
-            rawtx = await btcProvider.getRawTx(txid).catch();
+            rawtx = await btcProvider.getRawTx(txid);
         } catch {}
     }
     if (!rawtx) {
