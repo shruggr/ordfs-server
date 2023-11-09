@@ -44,10 +44,7 @@ if (process.env.REDIS_HOST) {
 export async function getRawTx(txid: string): Promise<Buffer> {
     let rawtx = await redis?.getBuffer(txid);
     if (!rawtx) {
-        try {
-            rawtx = await bsvProvider.getRawTx(txid);
-            await redis.set(txid, rawtx)
-        } catch {}
+        rawtx = await bsvProvider.getRawTx(txid).catch();
         // const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
         // const resp = await fetch(url);
         // if (!resp.ok) {
@@ -57,14 +54,8 @@ export async function getRawTx(txid: string): Promise<Buffer> {
     }
     if (!rawtx) {
         try {
-            rawtx = await btcProvider.getRawTx(txid);
-            await redis.set(txid, rawtx)
+            rawtx = await btcProvider.getRawTx(txid).catch();
         } catch {}
-        // const resp = await fetch(`https://junglebus.gorillapool.io/v1/transaction/get/${txid}/bin`);
-        // if (!resp.ok) {
-        //     throw createError(resp.status, resp.statusText);
-        // }
-        // rawtx = Buffer.from(await resp.arrayBuffer());
     }
     if (!rawtx) {
         throw new NotFound();
