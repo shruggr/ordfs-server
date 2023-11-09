@@ -29,7 +29,6 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@gorillapool/js-junglebus": "^0.4.1",
     "@ts-bitcoin/core": "^2.2.0",
     "axios": "^1.4.0",
     "bitcoin-core": "^4.1.0",
