@@ -1,6 +1,7 @@
 import * as Client from "bitcoin-core";
 import "cross-fetch/polyfill";
-import createError, { NotFound } from "http-errors";
+import { NotFound } from "http-errors";
+import * as createError from "http-errors";
 import { Redis } from "ioredis";
 
 let redis: Redis;

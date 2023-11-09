@@ -2,7 +2,7 @@ import * as cors from "cors";
 import * as dotenv from "dotenv";
 import * as express from "express";
 import { ErrorRequestHandler, Request, Response } from "express";
-import createError from "http-errors";
+import { HttpError, NotFound } from "http-errors";
 import { RegisterRoutes } from "./routes";
 dotenv.config();
 
@@ -30,16 +30,16 @@ RegisterRoutes(server);
 
 server.use((req, res, next) => {
   console.log(req.path);
-  next(new createError.NotFound("Not Found"));
+  next(new NotFound("Not Found"));
 });
 
 const errorMiddleware = ((
-  err: TypeError | createError.HttpError,
+  err: TypeError | HttpError,
   req: Request,
   res: Response
 ) => {
-  console.error(req.path, (err as createError.HttpError).status || 500, err.message);
-  res.status((err as createError.HttpError).status || 500).json({ message: err.message });
+  console.error(req.path, (err as HttpError).status || 500, err.message);
+  res.status((err as HttpError).status || 500).json({ message: err.message });
 }) as ErrorRequestHandler;
 
 server.use(errorMiddleware);
