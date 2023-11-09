@@ -20,7 +20,7 @@ export class Outpoint {
 
     static fromString(str: string) {
         const origin = new Outpoint();
-        if(!str.match(/^[0-9a-fA-F]{64}_\d*$/)) throw new Error('invalid outpoint')
+        if(!str.match(/^[0-9a-fA-F]{64}_\d+$/)) throw new Error('invalid outpoint')
         origin.txid = Buffer.from(str.slice(0, 64), 'hex');
         origin.vout = parseInt(str.slice(65), 10);
         return origin;
