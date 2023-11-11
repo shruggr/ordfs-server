@@ -92,7 +92,7 @@ export function RegisterRoutes(app: express.Express) {
     let immutable = true;
     try {
       try {
-        file = await loadInscription(pointer, req.query.meta);
+        file = await loadInscription(pointer, req.query.meta, true);
       } catch (err) {
         if (!(err instanceof BadRequest)) {
           throw err;

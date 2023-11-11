@@ -2,6 +2,7 @@ import { Transaction } from "bitcore-lib";
 import { Redis } from "ioredis";
 import { OpCode, Script, Tx } from "@ts-bitcoin/core";
 import { NotFound } from "http-errors";
+import * as createError from "http-errors";
 import { Outpoint } from "./models/outpoint";
 import { File } from "./models/models";
 import { BtcProvider, ITxProvider, ProxyProvider, RpcProvider } from "./provider";
@@ -106,9 +107,16 @@ export async function getBlockByHash(
     throw new Error("Invalid Network");
 }
 
-export async function loadFileByOutpoint(outpoint: Outpoint): Promise<File> {
-    const tx = await loadTx(outpoint.txid.toString('hex'));
-    return parseScript(tx.txOuts[outpoint.vout].script);
+export async function loadFileByOutpoint(outpoint: Outpoint, fuzzy = false): Promise<File> {
+    const url = `https://v3.ordinals.gorillapool.io/content/${outpoint.toString()}${fuzzy ? '?fuzzy=true' : ''}`
+    const resp = await fetch(url);
+    if (!resp.ok) {
+        throw createError(resp.status, resp.statusText);
+    }
+    return {
+        data: Buffer.from(await resp.arrayBuffer()),
+        type: resp.headers.get('content-type') || '',
+    };
 }
 
 export async function loadFileByInpoint(inpoint: string): Promise<File> {

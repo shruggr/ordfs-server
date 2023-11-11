@@ -25,7 +25,7 @@ export async function loadPointerFromDNS(hostname: string): Promise<string> {
   throw new NotFound();
 }
 
-export async function loadInscription(pointer: string, metadata = false): Promise<File> {
+export async function loadInscription(pointer: string, metadata = false, fuzzy = false): Promise<File> {
   console.log("loadInscription", pointer);
   let file: File | undefined;
 
@@ -34,7 +34,7 @@ export async function loadInscription(pointer: string, metadata = false): Promis
   } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/)) {
     file = await loadFileByInpoint(pointer)
   } else if (pointer.match(/^[0-9a-fA-F]{64}_\d+$/)) {
-    file = await loadFileByOutpoint(Outpoint.fromString(pointer))
+    file = await loadFileByOutpoint(Outpoint.fromString(pointer), fuzzy)
     if (file && metadata) {
       try {
         const url =`https://v3.ordinals.gorillapool.io/api/txos/${pointer}`;
