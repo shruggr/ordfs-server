@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BtcProvider = exports.ProxyProvider = exports.RpcProvider = void 0;
 const Client = require("bitcoin-core");
 require("cross-fetch/polyfill");
-const http_errors_1 = require("http-errors");
 const createError = require("http-errors");
+const http_errors_1 = require("http-errors");
 const ioredis_1 = require("ioredis");
 let redis;
 if (process.env.REDIS_HOST) {
@@ -108,7 +108,7 @@ class BtcProvider {
         let rawtx = await (redis === null || redis === void 0 ? void 0 : redis.getBuffer(txid));
         if (!rawtx) {
             // TODO: Make this configuration based
-            const resp = await fetch(`https://ordinals.shruggr.cloud/v1/btc/tx/${txid}`);
+            const resp = await fetch(`https://ordfs.gorillapool.io/v1/btc/tx/${txid}`);
             if (!resp.ok) {
                 throw createError(resp.status, resp.statusText);
             }
@@ -119,19 +119,19 @@ class BtcProvider {
     }
     async getBlockchainInfo() {
         // TODO: Make this configuration based
-        const resp = await fetch("https://ordinals.shruggr.cloud/v1/btc/block/latest");
+        const resp = await fetch("https://ordfs.gorillapool.io/v1/btc/block/latest");
         if (!resp.ok) {
             throw createError(resp.status, resp.statusText);
         }
         return resp.json();
     }
     async getBlockByHeight(height) {
-        const resp = await fetch(`https://ordinals.shruggr.cloud/v1/btc/block/height/${height}`);
+        const resp = await fetch(`https://ordfs.gorillapool.io/v1/btc/block/height/${height}`);
         const info = await resp.json();
         return { height, hash: info.hash };
     }
     async getBlockByHash(hash) {
-        const resp = await fetch(`https://ordinals.shruggr.cloud/v1/btc/block/hash/${hash}`);
+        const resp = await fetch(`https://ordfs.gorillapool.io/v1/btc/block/hash/${hash}`);
         const info = await resp.json();
         return {
             height: info.height,
