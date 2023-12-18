@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadInscription = exports.loadPointerFromDNS = void 0;
-const dns = require("dns/promises");
 const cross_fetch_1 = require("cross-fetch");
-const http_errors_1 = require("http-errors");
+const dns = require("dns/promises");
 const createError = require("http-errors");
+const http_errors_1 = require("http-errors");
 const data_1 = require("./data");
 const outpoint_1 = require("./models/outpoint");
 async function loadPointerFromDNS(hostname) {
@@ -39,17 +39,16 @@ async function loadInscription(pointer, metadata = false, fuzzy = false) {
         file = await (0, data_1.loadFileByOutpoint)(outpoint_1.Outpoint.fromString(pointer), fuzzy);
         if (file && metadata) {
             try {
-                const url = `https://v3.ordinals.gorillapool.io/api/txos/${pointer}`;
+                const url = `https://ordinals.gorillapool.io/api/txos/${pointer}`;
                 const resp = await (0, cross_fetch_1.default)(url);
                 if (!resp.ok) {
                     throw createError(resp.status, resp.statusText);
                 }
                 const data = await resp.json();
-                const { hash } = await (0, data_1.getBlockByHeight)('bsv', data.height);
+                const { hash } = await (0, data_1.getBlockByHeight)("bsv", data.height);
                 file.meta = Object.assign(Object.assign({}, data), { hash });
             }
             catch (_a) { }
-            ;
         }
     }
     else

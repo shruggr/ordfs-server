@@ -1,10 +1,15 @@
-import * as dns from "dns/promises";
 import fetch from "cross-fetch";
-import { BadRequest, NotFound } from "http-errors";
+import * as dns from "dns/promises";
 import * as createError from "http-errors";
+import { BadRequest, NotFound } from "http-errors";
 
+import {
+  getBlockByHeight,
+  loadFileByInpoint,
+  loadFileByOutpoint,
+  loadFileByTxid,
+} from "./data";
 import { File } from "./models/models";
-import { getBlockByHeight, loadFileByInpoint, loadFileByOutpoint, loadFileByTxid } from "./data";
 import { Outpoint } from "./models/outpoint";
 
 export async function loadPointerFromDNS(hostname: string): Promise<string> {
@@ -19,37 +24,41 @@ export async function loadPointerFromDNS(hostname: string): Promise<string> {
       console.log("Elem:", elem);
       pointer = elem.slice(prefix.length);
       console.log("Origin:", pointer);
-      return pointer
+      return pointer;
     }
   }
   throw new NotFound();
 }
 
-export async function loadInscription(pointer: string, metadata = false, fuzzy = false): Promise<File> {
+export async function loadInscription(
+  pointer: string,
+  metadata = false,
+  fuzzy = false
+): Promise<File> {
   console.log("loadInscription", pointer);
   let file: File | undefined;
 
   if (pointer.match(/^[0-9a-fA-F]{64}$/)) {
     file = await loadFileByTxid(pointer);
   } else if (pointer.match(/^[0-9a-fA-F]{64}i\d+$/)) {
-    file = await loadFileByInpoint(pointer)
+    file = await loadFileByInpoint(pointer);
   } else if (pointer.match(/^[0-9a-fA-F]{64}_\d+$/)) {
-    file = await loadFileByOutpoint(Outpoint.fromString(pointer), fuzzy)
+    file = await loadFileByOutpoint(Outpoint.fromString(pointer), fuzzy);
     if (file && metadata) {
       try {
-        const url =`https://v3.ordinals.gorillapool.io/api/txos/${pointer}`;
+        const url = `https://ordinals.gorillapool.io/api/txos/${pointer}`;
         const resp = await fetch(url);
         if (!resp.ok) {
           throw createError(resp.status, resp.statusText);
         }
         const data = await resp.json();
-        const { hash } = await getBlockByHeight('bsv', data!.height);
+        const { hash } = await getBlockByHeight("bsv", data!.height);
 
         file.meta = {
           ...data,
-          hash
+          hash,
         };
-      } catch {};
+      } catch {}
     }
   } else throw new BadRequest("Invalid Pointer");
 
@@ -57,4 +66,3 @@ export async function loadInscription(pointer: string, metadata = false, fuzzy =
   return file;
 }
 export { File };
-

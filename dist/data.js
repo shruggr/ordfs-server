@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseScript = exports.loadFileByTxid = exports.loadFileByInpoint = exports.loadFileByOutpoint = exports.getBlockByHash = exports.getBlockByHeight = exports.getBlockchainInfo = exports.loadTx = exports.getRawTx = void 0;
-const bitcore_lib_1 = require("bitcore-lib");
-const ioredis_1 = require("ioredis");
 const core_1 = require("@ts-bitcoin/core");
-const http_errors_1 = require("http-errors");
+const bitcore_lib_1 = require("bitcore-lib");
 const createError = require("http-errors");
+const http_errors_1 = require("http-errors");
+const ioredis_1 = require("ioredis");
 const provider_1 = require("./provider");
 let bsvProvider = new provider_1.ProxyProvider();
 let btcProvider = new provider_1.BtcProvider();
@@ -87,19 +87,19 @@ async function getBlockByHash(network, hash) {
 }
 exports.getBlockByHash = getBlockByHash;
 async function loadFileByOutpoint(outpoint, fuzzy = false) {
-    const url = `https://v3.ordinals.gorillapool.io/content/${outpoint.toString()}${fuzzy ? '?fuzzy=true' : ''}`;
+    const url = `https://ordinals.gorillapool.io/content/${outpoint.toString()}${fuzzy ? "?fuzzy=true" : ""}`;
     const resp = await fetch(url);
     if (!resp.ok) {
         throw createError(resp.status, resp.statusText);
     }
     return {
         data: Buffer.from(await resp.arrayBuffer()),
-        type: resp.headers.get('content-type') || '',
+        type: resp.headers.get("content-type") || "",
     };
 }
 exports.loadFileByOutpoint = loadFileByOutpoint;
 async function loadFileByInpoint(inpoint) {
-    const [txid, vout] = inpoint.split('i');
+    const [txid, vout] = inpoint.split("i");
     const rawtx = await getRawTx(txid);
     const tx = new bitcore_lib_1.Transaction(rawtx);
     return parseScript(tx.txIns[parseInt(vout, 10)].script);
@@ -107,7 +107,7 @@ async function loadFileByInpoint(inpoint) {
 exports.loadFileByInpoint = loadFileByInpoint;
 async function loadFileByTxid(txid) {
     const tx = await loadTx(txid);
-    for (let txOut of tx.txOuts) {
+    for (const txOut of tx.txOuts) {
         try {
             const data = await parseScript(txOut.script);
             if (data)
@@ -122,7 +122,7 @@ function parseScript(script) {
     var _a, _b, _c, _d;
     let opFalse = 0;
     let opIf = 0;
-    for (let [i, chunk] of script.chunks.entries()) {
+    for (const [i, chunk] of script.chunks.entries()) {
         if (chunk.opCodeNum === core_1.OpCode.OP_FALSE) {
             opFalse = i;
         }
@@ -130,7 +130,7 @@ function parseScript(script) {
             opIf = i;
         }
         if (((_a = chunk.buf) === null || _a === void 0 ? void 0 : _a.equals(ORD)) && opFalse === i - 2 && opIf === i - 1) {
-            let file = {};
+            const file = {};
             for (let j = i + 1; j < script.chunks.length; j += 2) {
                 if (script.chunks[j].buf)
                     break;
@@ -139,7 +139,7 @@ function parseScript(script) {
                         file.data = script.chunks[j + 1].buf;
                         return file;
                     case core_1.OpCode.OP_1:
-                        file.type = (_b = script.chunks[j + 1].buf) === null || _b === void 0 ? void 0 : _b.toString('utf8');
+                        file.type = (_b = script.chunks[j + 1].buf) === null || _b === void 0 ? void 0 : _b.toString("utf8");
                         break;
                     case core_1.OpCode.OP_ENDIF:
                         break;
@@ -149,7 +149,7 @@ function parseScript(script) {
         if ((_c = chunk.buf) === null || _c === void 0 ? void 0 : _c.equals(B)) {
             return {
                 data: script.chunks[i + 1].buf,
-                type: (_d = script.chunks[i + 2].buf) === null || _d === void 0 ? void 0 : _d.toString('utf8'),
+                type: (_d = script.chunks[i + 2].buf) === null || _d === void 0 ? void 0 : _d.toString("utf8"),
             };
         }
     }
