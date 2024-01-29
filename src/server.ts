@@ -1,6 +1,7 @@
 import * as cors from "cors";
 import * as dotenv from "dotenv";
 import * as express from "express";
+import * as path from "path";
 import { ErrorRequestHandler, Request, Response } from "express";
 import { HttpError, NotFound } from "http-errors";
 import { RegisterRoutes } from "./routes";
@@ -18,8 +19,12 @@ async function main() {
 server.set("trust proxy", true);
 server.use(cors({ origin: true }));
 
+server.set("views", path.resolve(__dirname, "../views"));
+
 server.set("view engine", "ejs");
-server.use("/public", express.static("public"));
+const pubPath = path.resolve(__dirname, "../public");
+console.log("pubPath", pubPath);
+server.use("/public", express.static(pubPath));
 
 server.use((req, res, next) => {
   console.log(req.path, req.method);

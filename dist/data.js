@@ -87,7 +87,7 @@ async function getBlockByHash(network, hash) {
 }
 exports.getBlockByHash = getBlockByHash;
 async function loadFileByOutpoint(outpoint, fuzzy = false) {
-    const url = `https://v3.ordinals.gorillapool.io/content/${outpoint.toString()}${fuzzy ? '?fuzzy=true' : ''}`;
+    const url = `https://ordinals.gorillapool.io/content/${outpoint.toString()}${fuzzy ? '?fuzzy=true' : ''}`;
     const resp = await fetch(url);
     if (!resp.ok) {
         throw createError(resp.status, resp.statusText);

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cors = require("cors");
 const dotenv = require("dotenv");
 const express = require("express");
+const path = require("path");
 const http_errors_1 = require("http-errors");
 const routes_1 = require("./routes");
 dotenv.config();
@@ -15,8 +16,11 @@ async function main() {
 }
 server.set("trust proxy", true);
 server.use(cors({ origin: true }));
+server.set("views", path.resolve(__dirname, "../views"));
 server.set("view engine", "ejs");
-server.use("/public", express.static("public"));
+const pubPath = path.resolve(__dirname, "../public");
+console.log("pubPath", pubPath);
+server.use("/public", express.static(pubPath));
 server.use((req, res, next) => {
     console.log(req.path, req.method);
     next();

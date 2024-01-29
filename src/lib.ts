@@ -37,7 +37,7 @@ export async function loadInscription(pointer: string, metadata = false, fuzzy =
     file = await loadFileByOutpoint(Outpoint.fromString(pointer), fuzzy)
     if (file && metadata) {
       try {
-        const url =`https://v3.ordinals.gorillapool.io/api/txos/${pointer}`;
+        const url =`https://ordinals.gorillapool.io/api/txos/${pointer}`;
         const resp = await fetch(url);
         if (!resp.ok) {
           throw createError(resp.status, resp.statusText);
